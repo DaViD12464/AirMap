@@ -1,0 +1,59 @@
+﻿@{
+    ViewData["Title"] = "Mapa z Leaflet.js";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title class="text-center">@ViewData["Title"]</title>
+    <!-- Leaflet data -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+</head>
+<body>
+
+    <!-- Map container -->
+    <div id="map" ></div>
+
+    <!-- Link Leaflet JavaScript  -->
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-Q6EutvdmLDMb4VjRbH/N05Dg8gW/MIn/k2N3uwRI0B8=" crossorigin=""></script>
+
+</body>
+
+</html>
+
+<!-- Map Initialization Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // map init
+      var map = L.map('map').setView([52.1143385, 19.4236714], 7); // default view
+
+      // adding map layer
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+      }).addTo(map);
+
+      // geolocalization check 
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+          // pull users location
+          var userLat = position.coords.latitude;
+          var userLng = position.coords.longitude;
+
+          // update map view to users location
+          map.setView([userLat, userLng], 13);
+
+          // pointer on actual users location
+          L.marker([userLat, userLng]).addTo(map)
+            .bindPopup("Twoja aktualna lokalizacja")
+            .openPopup();
+        }, function (error) {
+          console.error("Błąd uzyskiwania lokalizacji: ", error);
+        });
+      } else {
+        alert("Geolokalizacja nie jest obsługiwana przez Twoją przeglądarkę.");
+      }
+    });
+</script>
