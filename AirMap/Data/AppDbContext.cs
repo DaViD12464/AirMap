@@ -8,6 +8,7 @@
     using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
     using System;
+    using System.ComponentModel.DataAnnotations.Schema;
 
     public class AppDbContext : DbContext
     {
@@ -23,6 +24,11 @@
         public DbSet<AirQualityReading> AirQualityReadings { get; set; } = null!;
         public DbSet<Source1Model> Source1Models { get; set; } = null!;
         public DbSet<Source2Model> Source2Models { get; set; } = null!;
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.EnableSensitiveDataLogging();
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -100,25 +106,38 @@
                         using (var scope = _serviceScopeFactory.CreateScope())
                         {
                             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
                             foreach (var source1 in source1Models)
                             {
                                 if (!string.IsNullOrEmpty(source1.Device))
                                 {
-                                    var existingSource1 = await dbContext.Source1Models.AsNoTracking().FirstOrDefaultAsync(s => s.Device == source1.Device);
+                                    // Get existing entry, ensuring no tracking conflicts
+                                    var existingSource1 = await dbContext.Source1Models
+                                        .AsNoTracking() // Use AsNoTracking to avoid tracking the entity
+                                        .FirstOrDefaultAsync(s => s.Device == source1.Device);
+
                                     if (existingSource1 != null)
                                     {
-                                        // Detach the existing entity to avoid tracking conflicts
-                                        dbContext.Entry(existingSource1).State = EntityState.Detached;
+                                        // Detach the existing entity if it's already being tracked
+                                        var trackedEntity = dbContext.Entry(existingSource1);
+                                        if (trackedEntity.State == EntityState.Detached)
+                                        {
+                                            dbContext.Entry(existingSource1).State = EntityState.Detached;
+                                        }
 
-                                        // Update existing entity
-                                        dbContext.Entry(source1).State = EntityState.Modified;
+                                        // Now update the entity
+                                        existingSource1.Timestamp = source1.Timestamp;
+                                        existingSource1.Lat = source1.Lat;
+                                        existingSource1.Lon = source1.Lon;
+                                        dbContext.Update(existingSource1); // Update the entity in the context
                                     }
                                     else
                                     {
-                                        // Add new entity
+                                        // Add new entity if it doesn't exist
                                         dbContext.Source1Models.Add(source1);
                                     }
 
+                                    // Insert new air quality reading
                                     var airQualityReading = new AirQualityReading
                                     {
                                         Latitude = source1.Lat,
@@ -135,10 +154,14 @@
                                     Console.WriteLine("Invalid data: Device property is null or empty.");
                                 }
                             }
+
+                            // Save all changes
                             await dbContext.SaveChangesAsync();
                         }
                     }
                 }
+
+
             }
             else
             {
@@ -161,6 +184,8 @@
         public decimal? PM25 { get; set; }
         public decimal? PM10 { get; set; }
         public string? Name { get; set; }
+
+        [Column(TypeName = "bit")]  // Specify correct SQL type
         public bool Indoor { get; set; }
         public string? Timestamp { get; set; }
         public decimal? Temperature { get; set; }
@@ -183,7 +208,7 @@
         {
             Device = string.Empty; // Ensure Device is always initialized
         }
-
+        public string? Timestamp { get; set; }
         public string Device { get; set; } = null!;
         public string? PM1 { get; set; }
         public string? PM25 { get; set; }

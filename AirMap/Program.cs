@@ -19,9 +19,9 @@ builder.Services.AddHttpClient<AirQualityHostedService>(); // Rejestracja HttpCl
 builder.Services.AddHostedService<AirQualityHostedService>(); // Rejestracja HostedService jako singleton
 builder.Services.AddHostedService<SensorProcessor>(); // Rejestracja innego HostedService
 
-// Konfiguracja DbContext z u¿yciem PostgreSQL
+// Konfiguracja DbContext z u¿yciem SQL Server
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))); // Konfiguracja DbContext z PostgreSQL
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); // Konfiguracja DbContext z SQL Server
 
 
 var app = builder.Build();

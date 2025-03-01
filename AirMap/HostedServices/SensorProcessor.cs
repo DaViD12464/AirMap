@@ -1,9 +1,9 @@
 ﻿public class SensorProcessor : BackgroundService
 {
     private readonly ILogger<SensorProcessor> _logger;
-    private readonly ILogger<SensorController> _sensorControllerLogger;
+    private readonly ILogger<DataService> _sensorControllerLogger;
 
-    public SensorProcessor(ILogger<SensorProcessor> logger, ILogger<SensorController> sensorControllerLogger)
+    public SensorProcessor(ILogger<SensorProcessor> logger, ILogger<DataService> sensorControllerLogger)
     {
         _logger = logger;
         _sensorControllerLogger = sensorControllerLogger;
@@ -20,7 +20,7 @@
             try
             {
                 // Wywołanie metody przetwarzającej dane
-                var controller = new SensorController(_sensorControllerLogger);
+                var controller = new DataService(_sensorControllerLogger);
                 await controller.ProcessSensorsData();
             }
             catch (Exception ex)

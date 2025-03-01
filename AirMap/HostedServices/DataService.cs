@@ -8,11 +8,11 @@ using System.Collections.Generic;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SensorController : ControllerBase
+public class DataService : ControllerBase
 {
-    private readonly ILogger<SensorController> _logger;
+    private readonly ILogger<DataService> _logger;
 
-    public SensorController(ILogger<SensorController> logger)
+    public DataService(ILogger<DataService> logger)
     {
         _logger = logger;
     }

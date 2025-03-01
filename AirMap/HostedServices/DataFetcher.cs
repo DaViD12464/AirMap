@@ -70,7 +70,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Response content: {content}");
+            //Console.WriteLine($"Response content: {content}");
 
             if (url.Contains("looko2"))
             {
