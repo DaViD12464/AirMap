@@ -43,9 +43,6 @@ public class DataService : ControllerBase
                     case "set2":
                         allSensors.AddRange(ProcessSet2(fileContent));
                         break;
-                    case "set3":
-                        allSensors.AddRange(ProcessSet3(fileContent));
-                        break;
                     default:
                         _logger.LogWarning($"Unknown data set type in file: {Path.GetFileName(filePath)}");
                         break;
@@ -87,11 +84,29 @@ public class DataService : ControllerBase
         var sensors = JsonConvert.DeserializeObject<List<SensorSet1>>(jsonData) ?? new List<SensorSet1>();
         return sensors.Select(s => new Sensor
         {
-            Latitude = s.Lat,
-            Longitude = s.Lon,
-            PM1 = s.PM1,
-            PM25 = s.PM25,
-            PM10 = s.PM10,
+            Device = s.Device,
+            PM1 = s.PM1?.ToString(),
+            PM25 = s.PM25?.ToString(),
+            PM10 = s.PM10?.ToString(),
+            Epoch = s.Epoch?.ToString(),
+            Latitude = s.Lat?.ToString(),
+            Longitude = s.Lon?.ToString(),
+            IJP = s.IJP?.ToString(),
+            IJPStringEN = s.IJPStringEN,
+            IJPString = s.IJPString,
+            IJPDescription = s.IJPDescription,
+            IJPDescriptionEN = s.IJPDescriptionEN,
+            Color = s.Color,
+            Temperature = s.Temperature?.ToString(),
+            Humidity = s.Humidity?.ToString(),
+            AveragePM1 = s.AveragePM1?.ToString(),
+            AveragePM25 = s.AveragePM25?.ToString(),
+            AveragePM10 = s.AveragePM10?.ToString(),
+            Name = s.Name,
+            Indoor = s.Indoor?.ToString(),
+            PreviousIJP = s.PreviousIJP?.ToString(),
+            HCHO = s.HCHO?.ToString(),
+            AverageHCHO = s.AverageHCHO?.ToString(),
             LocationName = s.Name
         }).ToList();
     }
@@ -101,29 +116,17 @@ public class DataService : ControllerBase
         var rawData = JsonConvert.DeserializeObject<List<SensorSet2>>(jsonData) ?? new List<SensorSet2>();
         return rawData.Select(r => new Sensor
         {
-            Latitude = r.lat,
-            Longitude = r.@long,
-            PM1 = r.values?.FirstOrDefault(v => v.dt == "pm1")?.value?.ToString(),
-            PM25 = r.values?.FirstOrDefault(v => v.dt == "pm2.5")?.value?.ToString(),
-            PM10 = r.values?.FirstOrDefault(v => v.dt == "pm10")?.value?.ToString()
+            Device = r.sensor2?.pin,
+            PM1 = r.sensordatavalues?.FirstOrDefault(v => v.value_type == "pm1")?.value?.ToString(),
+            PM25 = r.sensordatavalues?.FirstOrDefault(v => v.value_type == "pm2.5")?.value?.ToString(),
+            PM10 = r.sensordatavalues?.FirstOrDefault(v => v.value_type == "pm10")?.value?.ToString(),
+            Latitude = r.location?.latitude,
+            Longitude = r.location?.longitude,
+            IJP = r.location?.indoor?.ToString(),
+            LocationName = r.location?.country
         }).ToList();
     }
 
-    private static List<Sensor> ProcessSet3(string jsonData)
-    {
-        try
-        {
-            // Deserializujemy dane jako listę obiektów SensorSet3
-            var data = JsonConvert.DeserializeObject<List<Sensor>>(jsonData) ?? new List<Sensor>();
-            return data;
-        }
-        catch (JsonSerializationException ex)
-        {
-            // Logowanie błędu dla lepszej analizy
-            Console.WriteLine($"Deserializacja danych do SensorSet3 nie powiodła się: {ex.Message}");
-            throw;
-        }
-    }
 
 
     private static List<Sensor> RemoveDuplicatesByCoordinates(List<Sensor> sensors)
