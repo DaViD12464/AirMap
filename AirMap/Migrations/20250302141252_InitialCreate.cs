@@ -14,10 +14,10 @@ namespace AirMap.Migrations
                 name: "AirQualityReadings",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Latitude = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Longitude = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Latitude = table.Column<decimal>(type: "decimal(18,8)", nullable: false),
+                    Longitude = table.Column<decimal>(type: "decimal(18,8)", nullable: false),
                     PM1 = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     PM25 = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     PM10 = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
@@ -44,10 +44,10 @@ namespace AirMap.Migrations
                 name: "Location",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Latitude = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Longitude = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Latitude = table.Column<decimal>(type: "decimal(18,8)", nullable: false),
+                    Longitude = table.Column<decimal>(type: "decimal(18,8)", nullable: false),
                     Altitude = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Country = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Indoor = table.Column<int>(type: "int", nullable: false)
@@ -61,13 +61,16 @@ namespace AirMap.Migrations
                 name: "Source1Models",
                 columns: table => new
                 {
-                    Device = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Timestamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Device = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PM1 = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PM25 = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PM10 = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Epoch = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Lat = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Lon = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Lat = table.Column<decimal>(type: "decimal(18,8)", nullable: false),
+                    Lon = table.Column<decimal>(type: "decimal(18,8)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Indoor = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Temperature = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -82,7 +85,7 @@ namespace AirMap.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Source1Models", x => x.Device);
+                    table.PrimaryKey("PK_Source1Models", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -92,7 +95,7 @@ namespace AirMap.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Timestamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LocationId = table.Column<int>(type: "int", nullable: true)
+                    LocationId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -123,12 +126,6 @@ namespace AirMap.Migrations
                         principalTable: "Source2Models",
                         principalColumn: "Id");
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AirQualityReadings_Latitude_Longitude",
-                table: "AirQualityReadings",
-                columns: new[] { "Latitude", "Longitude" },
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_SensorDataValue_Source2ModelId",

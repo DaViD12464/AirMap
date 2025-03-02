@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AirMap.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250227194101_InitialCreate")]
+    [Migration("20250302141252_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -26,29 +26,29 @@ namespace AirMap.Migrations
 
             modelBuilder.Entity("AirMap.Data.AirQualityReading", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<decimal?>("AveragePM1")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<decimal?>("AveragePM10")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<decimal?>("AveragePM25")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<string>("Color")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("HCHO")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<decimal?>("Humidity")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<string>("IJP")
                         .HasColumnType("nvarchar(max)");
@@ -63,47 +63,44 @@ namespace AirMap.Migrations
                         .HasColumnType("bit");
 
                     b.Property<decimal>("Latitude")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 8)");
 
                     b.Property<decimal>("Longitude")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 8)");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("PM1")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<decimal?>("PM10")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<decimal?>("PM25")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<decimal?>("Temperature")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<string>("Timestamp")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Latitude", "Longitude")
-                        .IsUnique();
-
                     b.ToTable("AirQualityReadings");
                 });
 
             modelBuilder.Entity("AirMap.Data.Location", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<decimal>("Altitude")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<string>("Country")
                         .HasColumnType("nvarchar(max)");
@@ -112,10 +109,10 @@ namespace AirMap.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Latitude")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 8)");
 
                     b.Property<decimal>("Longitude")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 8)");
 
                     b.HasKey("Id");
 
@@ -148,8 +145,11 @@ namespace AirMap.Migrations
 
             modelBuilder.Entity("AirMap.Data.Source1Model", b =>
                 {
-                    b.Property<string>("Device")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("AveragePM1")
                         .HasColumnType("nvarchar(max)");
@@ -161,6 +161,10 @@ namespace AirMap.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Color")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Device")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Epoch")
@@ -182,10 +186,10 @@ namespace AirMap.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Lat")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 8)");
 
                     b.Property<decimal>("Lon")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 8)");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -202,7 +206,10 @@ namespace AirMap.Migrations
                     b.Property<string>("Temperature")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Device");
+                    b.Property<string>("Timestamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
 
                     b.ToTable("Source1Models");
                 });
@@ -215,8 +222,8 @@ namespace AirMap.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<int?>("LocationId")
-                        .HasColumnType("int");
+                    b.Property<long?>("LocationId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Timestamp")
                         .HasColumnType("nvarchar(max)");

@@ -9,6 +9,7 @@
     using Microsoft.Extensions.DependencyInjection;
     using System;
     using System.ComponentModel.DataAnnotations.Schema;
+    using System.ComponentModel.DataAnnotations;
 
     public class AppDbContext : DbContext
     {
@@ -27,34 +28,83 @@
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.EnableSensitiveDataLogging();
+            optionsBuilder.EnableSensitiveDataLogging(false).LogTo(Console.WriteLine, LogLevel.Warning); 
         }
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<AirQualityReading>()
+                .Property(e => e.AveragePM1)
+                .HasColumnType("decimal(18, 2)");
 
-            modelBuilder.Entity<AirQualityReading>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.HasIndex(e => new { e.Latitude, e.Longitude }).IsUnique();
-            });
+            modelBuilder.Entity<AirQualityReading>()
+                .Property(e => e.AveragePM10)
+                .HasColumnType("decimal(18, 2)");
 
-            modelBuilder.Entity<Source1Model>(entity =>
-            {
-                entity.HasKey(e => e.Device); // Assuming Device is unique and can be used as a primary key
-            });
+            modelBuilder.Entity<AirQualityReading>()
+                .Property(e => e.AveragePM25)
+                .HasColumnType("decimal(18, 2)");
 
-            modelBuilder.Entity<Source2Model>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-            });
+            modelBuilder.Entity<AirQualityReading>()
+                .Property(e => e.HCHO)
+                .HasColumnType("decimal(18, 2)");
 
-            modelBuilder.Entity<Location>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-            });
+            modelBuilder.Entity<AirQualityReading>()
+                .Property(e => e.Humidity)
+                .HasColumnType("decimal(18, 2)");
+
+            modelBuilder.Entity<AirQualityReading>()
+                .Property(e => e.Latitude)
+                .HasColumnType("decimal(18, 8)");
+
+            modelBuilder.Entity<AirQualityReading>()
+                .Property(e => e.Longitude)
+                .HasColumnType("decimal(18, 8)");
+
+            modelBuilder.Entity<AirQualityReading>()
+                .Property(e => e.PM1)
+                .HasColumnType("decimal(18, 2)");
+
+            modelBuilder.Entity<AirQualityReading>()
+                .Property(e => e.PM10)
+                .HasColumnType("decimal(18, 2)");
+
+            modelBuilder.Entity<AirQualityReading>()
+                .Property(e => e.PM25)
+                .HasColumnType("decimal(18, 2)");
+
+            modelBuilder.Entity<AirQualityReading>()
+                .Property(e => e.Temperature)
+                .HasColumnType("decimal(18, 2)");
+
+            modelBuilder.Entity<Location>()
+                .Property(e => e.Altitude)
+                .HasColumnType("decimal(18, 2)");
+
+            modelBuilder.Entity<Location>()
+                .Property(e => e.Latitude)
+                .HasColumnType("decimal(18, 8)");
+
+            modelBuilder.Entity<Location>()
+                .Property(e => e.Longitude)
+                .HasColumnType("decimal(18, 8)");
+
+            modelBuilder.Entity<Source1Model>().HasKey(s => s.Id);
+            modelBuilder.Entity<Source1Model>().Property(p => p.Id).ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Source1Model>().HasIndex(s => s.Device).IsUnique();
+
+            modelBuilder.Entity<Source1Model>()
+                .Property(e => e.Lat)
+                .HasColumnType("decimal(18, 8)");
+
+            modelBuilder.Entity<Source1Model>()
+                .Property(e => e.Lon)
+                .HasColumnType("decimal(18, 8)");
         }
+
 
         public async Task FetchAndSaveData(string url, string apiKey)
         {
@@ -72,95 +122,73 @@
 
                 if (url.Contains("looko2"))
                 {
-                    var source2Models = JsonConvert.DeserializeObject<List<Source2Model>>(content);
-                    if (source2Models != null)
+                    var root = JsonConvert.DeserializeObject<AirMap.Models.Root>(content);
+                    if (root?.Sensors != null)
                     {
                         using (var scope = _serviceScopeFactory.CreateScope())
                         {
                             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                            foreach (var source2 in source2Models)
+                            foreach (var sensor in root.Sensors)
                             {
-                                if (source2.Location != null)
+                                if (sensor.Lat.HasValue && sensor.Lon.HasValue)
                                 {
                                     var airQualityReading = new AirQualityReading
                                     {
-                                        Latitude = source2.Location.Latitude,
-                                        Longitude = source2.Location.Longitude,
-                                        PM1 = source2.GetSensorValue("P1"),
-                                        PM25 = source2.GetSensorValue("P2"),
-                                        PM10 = source2.GetSensorValue("P4"),
-                                        Timestamp = source2.Timestamp
+                                        Latitude = (decimal)sensor.Lat.Value,
+                                        Longitude = (decimal)sensor.Lon.Value,
+                                        PM1 = sensor.PM1.HasValue ? (decimal?)sensor.PM1.Value : null,
+                                        PM25 = sensor.PM25.HasValue ? (decimal?)sensor.PM25.Value : null,
+                                        PM10 = sensor.PM10.HasValue ? (decimal?)sensor.PM10.Value : null,
+                                        Timestamp = sensor.Epoch?.ToString()
                                     };
+
+                                    await dbContext.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Source1Models ON");
                                     dbContext.AirQualityReadings.Add(airQualityReading);
                                 }
                             }
+                            
                             await dbContext.SaveChangesAsync();
+                            await dbContext.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Source1Models OFF");
+
                         }
                     }
                 }
+
                 else if (url.Contains("sensor.community"))
                 {
-                    var source1Models = JsonConvert.DeserializeObject<List<Source1Model>>(content);
-                    if (source1Models != null)
+                    var sensorSets = JsonConvert.DeserializeObject<List<AirMap.Models.SensorSet2>>(content);
+                    if (sensorSets != null)
                     {
                         using (var scope = _serviceScopeFactory.CreateScope())
                         {
                             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-                            foreach (var source1 in source1Models)
+                            foreach (var sensorSet in sensorSets)
                             {
-                                if (!string.IsNullOrEmpty(source1.Device))
+                                if (sensorSet.location?.latitude != null && sensorSet.location?.longitude != null)
                                 {
-                                    // Get existing entry, ensuring no tracking conflicts
-                                    var existingSource1 = await dbContext.Source1Models
-                                        .AsNoTracking() // Use AsNoTracking to avoid tracking the entity
-                                        .FirstOrDefaultAsync(s => s.Device == source1.Device);
-
-                                    if (existingSource1 != null)
-                                    {
-                                        // Detach the existing entity if it's already being tracked
-                                        var trackedEntity = dbContext.Entry(existingSource1);
-                                        if (trackedEntity.State == EntityState.Detached)
-                                        {
-                                            dbContext.Entry(existingSource1).State = EntityState.Detached;
-                                        }
-
-                                        // Now update the entity
-                                        existingSource1.Timestamp = source1.Timestamp;
-                                        existingSource1.Lat = source1.Lat;
-                                        existingSource1.Lon = source1.Lon;
-                                        dbContext.Update(existingSource1); // Update the entity in the context
-                                    }
-                                    else
-                                    {
-                                        // Add new entity if it doesn't exist
-                                        dbContext.Source1Models.Add(source1);
-                                    }
-
-                                    // Insert new air quality reading
                                     var airQualityReading = new AirQualityReading
                                     {
-                                        Latitude = source1.Lat,
-                                        Longitude = source1.Lon,
-                                        PM1 = string.IsNullOrWhiteSpace(source1.PM1) ? null : decimal.Parse(source1.PM1),
-                                        PM25 = string.IsNullOrWhiteSpace(source1.PM25) ? null : decimal.Parse(source1.PM25),
-                                        PM10 = string.IsNullOrWhiteSpace(source1.PM10) ? null : decimal.Parse(source1.PM10),
-                                        Timestamp = source1.Epoch
+                                        Latitude = decimal.Parse(sensorSet.location.latitude),
+                                        Longitude = decimal.Parse(sensorSet.location.longitude),
+                                        Timestamp = sensorSet.timestamp?.ToString(),
+                                        PM1 = sensorSet.sensordatavalues?.FirstOrDefault(v => v.value_type == "P1")?.value.HasValue == true
+                                            ? (decimal?)Convert.ToDecimal(sensorSet.sensordatavalues.FirstOrDefault(v => v.value_type == "P1")?.value)
+                                            : null,
+                                        PM25 = sensorSet.sensordatavalues?.FirstOrDefault(v => v.value_type == "P2")?.value.HasValue == true
+                                            ? (decimal?)Convert.ToDecimal(sensorSet.sensordatavalues.FirstOrDefault(v => v.value_type == "P2")?.value)
+                                            : null,
+                                        PM10 = sensorSet.sensordatavalues?.FirstOrDefault(v => v.value_type == "P4")?.value.HasValue == true
+                                            ? (decimal?)Convert.ToDecimal(sensorSet.sensordatavalues.FirstOrDefault(v => v.value_type == "P4")?.value)
+                                            : null
                                     };
+
                                     dbContext.AirQualityReadings.Add(airQualityReading);
                                 }
-                                else
-                                {
-                                    Console.WriteLine("Invalid data: Device property is null or empty.");
-                                }
                             }
-
-                            // Save all changes
                             await dbContext.SaveChangesAsync();
                         }
                     }
                 }
-
 
             }
             else
@@ -173,11 +201,11 @@
             }
         }
     }
-
+    
     // Klasa reprezentująca dane w tabeli
     public class AirQualityReading
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
         public decimal Latitude { get; set; }
         public decimal Longitude { get; set; }
         public decimal? PM1 { get; set; }
@@ -208,6 +236,9 @@
         {
             Device = string.Empty; // Ensure Device is always initialized
         }
+
+        [ForeignKey("Id")]
+        public long Id { get; set; }
         public string? Timestamp { get; set; }
         public string Device { get; set; } = null!;
         public string? PM1 { get; set; }
@@ -246,7 +277,7 @@
 
     public class Location
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
         public decimal Latitude { get; set; }
         public decimal Longitude { get; set; }
         public decimal Altitude { get; set; }
@@ -261,3 +292,4 @@
         public string? ValueType { get; set; }
     }
 }
+    
