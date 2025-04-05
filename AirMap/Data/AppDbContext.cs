@@ -103,8 +103,14 @@
             modelBuilder.Entity<Source1Model>()
                 .Property(e => e.Lon)
                 .HasColumnType("decimal(18, 8)");
+
         }
 
+        private decimal? TryGetSensorValue(List<AirMap.Models.SensorDataValues>? values, string type)
+        {
+            var val = values?.FirstOrDefault(v => v.value_type == type)?.value;
+            return decimal.TryParse(val, out var parsed) ? parsed : (decimal?)null;
+        }
 
         public async Task FetchAndSaveData(string url, string apiKey)
         {
@@ -142,13 +148,13 @@
                                         Timestamp = sensor.Epoch?.ToString()
                                     };
 
-                                    await dbContext.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Source1Models ON");
                                     dbContext.AirQualityReadings.Add(airQualityReading);
                                 }
                             }
+
                             
                             await dbContext.SaveChangesAsync();
-                            await dbContext.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Source1Models OFF");
+
 
                         }
                     }
@@ -171,21 +177,29 @@
                                         Latitude = decimal.Parse(sensorSet.location.latitude),
                                         Longitude = decimal.Parse(sensorSet.location.longitude),
                                         Timestamp = sensorSet.timestamp?.ToString(),
-                                        PM1 = sensorSet.sensordatavalues?.FirstOrDefault(v => v.value_type == "P1")?.value.HasValue == true
-                                            ? (decimal?)Convert.ToDecimal(sensorSet.sensordatavalues.FirstOrDefault(v => v.value_type == "P1")?.value)
-                                            : null,
-                                        PM25 = sensorSet.sensordatavalues?.FirstOrDefault(v => v.value_type == "P2")?.value.HasValue == true
-                                            ? (decimal?)Convert.ToDecimal(sensorSet.sensordatavalues.FirstOrDefault(v => v.value_type == "P2")?.value)
-                                            : null,
-                                        PM10 = sensorSet.sensordatavalues?.FirstOrDefault(v => v.value_type == "P4")?.value.HasValue == true
-                                            ? (decimal?)Convert.ToDecimal(sensorSet.sensordatavalues.FirstOrDefault(v => v.value_type == "P4")?.value)
-                                            : null
+                                        PM1 = TryGetSensorValue(sensorSet.sensordatavalues, "P1"),
+                                        PM25 = TryGetSensorValue(sensorSet.sensordatavalues, "P2"),
+                                        PM10 = TryGetSensorValue(sensorSet.sensordatavalues, "P4")
                                     };
+
+                                    await dbContext.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Source1Models ON");
 
                                     dbContext.AirQualityReadings.Add(airQualityReading);
                                 }
                             }
-                            await dbContext.SaveChangesAsync();
+
+                            try
+                            {
+                                await dbContext.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Source1Models OFF");
+                                await dbContext.SaveChangesAsync();
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("❌ Błąd podczas zapisu danych do bazy:");
+                                Console.WriteLine(ex.Message);
+                                // Tu możesz dodać np. logowanie do pliku albo dodatkowy retry
+                            }
+
                         }
                     }
                 }
@@ -205,6 +219,7 @@
     // Klasa reprezentująca dane w tabeli
     public class AirQualityReading
     {
+        [Key]
         public long Id { get; set; }
         public decimal Latitude { get; set; }
         public decimal Longitude { get; set; }
@@ -237,7 +252,8 @@
             Device = string.Empty; // Ensure Device is always initialized
         }
 
-        [ForeignKey("Id")]
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
         public string? Timestamp { get; set; }
         public string Device { get; set; } = null!;
@@ -272,6 +288,7 @@
         {
             var value = SensorDataValues?.FirstOrDefault(v => v.ValueType == valueType)?.Value;
             return value != null ? decimal.Parse(value) : null;
+
         }
     }
 

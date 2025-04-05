@@ -1,11 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AirMap.Models
 { // data set for looko2
 
     public class SensorSet1
     {
-        [ForeignKey("Id")]
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; } //added Id as for appDBContext 
         public string? Device { get; set; }
         public double? PM1 { get; set; }

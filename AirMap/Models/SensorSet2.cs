@@ -1,7 +1,12 @@
-﻿namespace AirMap.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+
+namespace AirMap.Models
 { // data set for sensor community
     public class SensorSet2
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long? id { get; set; }
         public string? sampling_rate { get; set; }
         public DateTime? timestamp { get; set; }
@@ -38,7 +43,7 @@
     public class SensorDataValues
     {
         public long? id { get; set; }
-        public double? value { get; set; }
+        public string? value { get; set; }
         public string? value_type { get; set; }
     }
 }
