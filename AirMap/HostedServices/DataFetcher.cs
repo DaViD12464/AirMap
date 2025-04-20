@@ -90,7 +90,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
             if (url.Contains("looko2"))
             {
                 // Parse and save LookO2 data
-                var source2Models = JsonConvert.DeserializeObject<List<Source2Model>>(content);
+                var source2Models = JsonConvert.DeserializeObject<List<Source2Model>>(content);  // using Source2Model from AppDbContext  instead of Models/SensorSet1
                 if (source2Models != null)
                 {
                     using (var scope = _serviceScopeFactory.CreateScope())
@@ -104,7 +104,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
             else if (url.Contains("sensor.community"))
             {
                 // Parse and save Sensor.Community data
-                var source1Models = JsonConvert.DeserializeObject<List<Source1Model>>(content);
+                var source1Models = JsonConvert.DeserializeObject<List<Source1Model>>(content); // using Source1Model from AppDbContext instead of Models/SensorSet2
                 if (source1Models != null)
                 {
                     using (var scope = _serviceScopeFactory.CreateScope())
