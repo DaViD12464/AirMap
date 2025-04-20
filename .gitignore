@@ -364,4 +364,5 @@ FodyWeavers.xsd
 
 appsettings.json
 appsettings.Development.json
-Data/
+Data/api 
+Data/output
