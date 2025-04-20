@@ -19,34 +19,49 @@ public class AirQualityHostedService : IHostedService, IDisposable
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        // Read API key from configuration
-        string? apiKey = _configuration["AirMonitorApiKey"];
-        Console.WriteLine($"Loaded API Key: {apiKey}");
-
         // Run timer every 30 minutes
-        _timer = new Timer(DoWork, null!, TimeSpan.Zero, TimeSpan.FromMinutes(30));
+        _timer = new Timer(async state => await DoWorkAsync(state), null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
         return Task.CompletedTask;
     }
 
-    private async void DoWork(object? state)
+    private async Task DoWorkAsync(object? state)
     {
         await _semaphore.WaitAsync();
         try
         {
-            string? Look02ApiKey = _configuration["Look02ApiKey"];
-            if (!string.IsNullOrEmpty(Look02ApiKey))
+            string? Look02ApiString = _configuration["Look02ApiString"];
+            string? LookO2ApiKey = _configuration["LookO2ApiKey"];
+            if (!string.IsNullOrEmpty(Look02ApiString) && !string.IsNullOrEmpty(LookO2ApiKey))
             {
-                await FetchAndSaveData("http://api.looko2.com/?method=GetAll&token=XXX", Look02ApiKey);
+                Console.WriteLine("---------------------------");
+                Console.WriteLine($"LookO2 API string: {Look02ApiString + LookO2ApiKey}");
+                Console.WriteLine("---------------------------");
+                // Pass the required parameters to FetchAndSaveData
+                await FetchAndSaveData(Look02ApiString, LookO2ApiKey);
             }
             else
             {
                 Console.WriteLine("---------------------------");
-                Console.WriteLine("API key is not available.");
+                Console.WriteLine("LookO2 API string / key is not available.");
                 Console.WriteLine("---------------------------");
             }
 
             // Fetch data from Sensor.Community and save to DB
-            await FetchAndSaveData("https://data.sensor.community/static/v1/data.json", string.Empty);
+            string? SensorCommunityApiString = _configuration["SensorCommunityApiString"];
+            if (!string.IsNullOrEmpty(SensorCommunityApiString))
+            {
+                Console.WriteLine("---------------------------");
+                Console.WriteLine($"SensorCommunity API string: {SensorCommunityApiString}");
+                Console.WriteLine("---------------------------");
+                // Pass the required parameters to FetchAndSaveData
+                await FetchAndSaveData(SensorCommunityApiString, string.Empty);
+            }
+            else
+            {
+                Console.WriteLine("---------------------------");
+                Console.WriteLine("SensorCommunity API string / key is not available.");
+                Console.WriteLine("---------------------------");
+            }
         }
         catch (Exception ex)
         {
@@ -58,7 +73,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
         }
     }
 
-    private async Task FetchAndSaveData(string url, string apiKey)
+    private async Task FetchAndSaveData(string url, string? apiKey)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
         if (!string.IsNullOrEmpty(apiKey))
