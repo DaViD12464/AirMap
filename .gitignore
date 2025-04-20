@@ -364,5 +364,5 @@ FodyWeavers.xsd
 
 appsettings.json
 appsettings.Development.json
-Data/api/
-Data/output/
+/AirMap/Data/api/sensors
+/AirMap/Data/output
