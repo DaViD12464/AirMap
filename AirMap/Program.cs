@@ -21,8 +21,19 @@ builder.Services.AddHostedService<SensorProcessor>(); // Rejestracja innego Host
 
 // Konfiguracja DbContext z u¿yciem SQL Server
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); // Konfiguracja DbContext z SQL Server
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+    providerOptions => providerOptions.EnableRetryOnFailure())); // Konfiguracja DbContext z SQL Server
+    
 
+// Test po³¹czenia z baz¹ danych
+var ConStr = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(ConStr))
+{
+    throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+}
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<AppDbContext>();
 
 var app = builder.Build();
 
@@ -41,22 +52,12 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-// Test po³¹czenia z baz¹ danych
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    try
-    {
-        Console.WriteLine("Sprawdzanie po³¹czenia z baz¹ danych...");
-        dbContext.Database.OpenConnection(); // Otwórz po³¹czenie z baz¹ danych
-        Console.WriteLine("Po³¹czenie z baz¹ danych zosta³o nawi¹zane pomyœlnie!");
-        dbContext.Database.CloseConnection(); // Zamknij po³¹czenie (opcjonalne)
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"B³¹d po³¹czenia z baz¹ danych: {ex.Message}");
-    }
-}
+app.UseAuthentication();
+
+
+app.MapHealthChecks("/health");
+
+
 
 app.MapControllerRoute(
     name: "default",
