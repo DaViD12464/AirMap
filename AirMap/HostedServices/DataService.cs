@@ -72,13 +72,21 @@ public class DataService : ControllerBase
 
     private static string DetermineDataSetType(string jsonData)
     {
+        //LookO2
         if (jsonData.Contains("\"Device\"")) return "set1";
-        if (jsonData.Contains("\"lat\"") && jsonData.Contains("\"values\"")) return "set2";
-        if (jsonData.Contains("\"stationName\"")) return "set3";
+        // Sensor.Community
+        if (jsonData.Contains("\"sensor\"") &&
+            jsonData.Contains("\"location\"") &&
+            jsonData.Contains("\"sensordatavalues\"") &&
+            jsonData.Contains("\"value_type\""))
+        {
+            return "set2";
+        }
 
         return "unknown";
     }
 
+    //Set1 for LookO2
     private static List<Sensor> ProcessSet1(string jsonData)
     {
         var sensors = JsonConvert.DeserializeObject<List<SensorSet1>>(jsonData) ?? new List<SensorSet1>();
@@ -111,20 +119,34 @@ public class DataService : ControllerBase
         }).ToList();
     }
 
+    //Set2 for Sensor-Community
     private static List<Sensor> ProcessSet2(string jsonData)
     {
         var rawData = JsonConvert.DeserializeObject<List<SensorSet2>>(jsonData) ?? new List<SensorSet2>();
-        return rawData.Select(r => new Sensor
+
+        var sensors = new List<Sensor>();
+
+        foreach (var entry in rawData)
         {
-            Device = r.sensor2?.pin,
-            PM1 = r.sensordatavalues?.FirstOrDefault(v => v.value_type == "pm1")?.value?.ToString(),
-            PM25 = r.sensordatavalues?.FirstOrDefault(v => v.value_type == "pm2.5")?.value?.ToString(),
-            PM10 = r.sensordatavalues?.FirstOrDefault(v => v.value_type == "pm10")?.value?.ToString(),
-            Latitude = r.location?.latitude,
-            Longitude = r.location?.longitude,
-            IJP = r.location?.indoor?.ToString(),
-            LocationName = r.location?.country
-        }).ToList();
+            if (entry.location == null || entry.sensor2 == null || entry.sensordatavalues == null)
+                continue;
+
+            var pm10 = entry.sensordatavalues.FirstOrDefault(x => x.value_type == "P1")?.value;
+            var pm25 = entry.sensordatavalues.FirstOrDefault(x => x.value_type == "P2")?.value;
+
+            sensors.Add(new Sensor
+            {
+                Device = entry.sensor2.id?.ToString(),
+                PM10 = pm10,
+                PM25 = pm25,
+                Latitude = entry.location.latitude,
+                Longitude = entry.location.longitude,
+                Epoch = entry.timestamp?.ToString("o"),
+                LocationName = "Sensor.Community"
+            });
+        }
+
+        return sensors;
     }
 
 
