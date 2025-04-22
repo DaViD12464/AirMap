@@ -2,6 +2,7 @@ using AirMap.Controllers;
 using AirMap.Models;
 using Microsoft.EntityFrameworkCore;
 using AirMap.Data;
+using AirMap.HostedServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,12 +19,14 @@ builder.Services.AddSingleton(configuration);
 builder.Services.AddHttpClient<AirQualityHostedService>(); // Rejestracja HttpClient dla HostedService
 builder.Services.AddHostedService<AirQualityHostedService>(); // Rejestracja HostedService jako singleton
 builder.Services.AddHostedService<SensorProcessor>(); // Rejestracja innego HostedService
+builder.Services.AddHttpClient<Fetcher>(); // Rejestracja Fetcher jako us³ugi
+builder.Services.AddScoped<Fetcher>(); // Rejestracja Fetcher jako us³ugi o krótkim czasie ¿ycia
+
 
 // Konfiguracja DbContext z u¿yciem SQL Server
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
-    providerOptions => providerOptions.EnableRetryOnFailure())); // Konfiguracja DbContext z SQL Server
-    
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),  // Konfiguracja DbContext z SQL Server
+    providerOptions => providerOptions.EnableRetryOnFailure()));  // przy pierwszej próbie po³¹czenia z baz¹ danych baza time-outuje, próba naprawienia poprzez retry
 
 // Test po³¹czenia z baz¹ danych
 var ConStr = builder.Configuration.GetConnectionString("DefaultConnection");

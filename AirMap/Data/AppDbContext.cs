@@ -13,15 +13,6 @@
 
     public class AppDbContext : DbContext
     {
-        private readonly HttpClient _httpClient;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
-
-        public AppDbContext(DbContextOptions<AppDbContext> options, HttpClient httpClient, IServiceScopeFactory serviceScopeFactory) : base(options)
-        {
-            _httpClient = httpClient;
-            _serviceScopeFactory = serviceScopeFactory;
-        }
-
         public DbSet<AirQualityReading> AirQualityReadings { get; set; } = null!;
         public DbSet<Source1Model> Source1Models { get; set; } = null!;
         public DbSet<Source2Model> Source2Models { get; set; } = null!;
@@ -30,9 +21,6 @@
         {
             optionsBuilder.EnableSensitiveDataLogging(false).LogTo(Console.WriteLine, LogLevel.Warning); 
         }
-
-
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<AirQualityReading>()
@@ -105,115 +93,6 @@
                 .HasColumnType("decimal(18, 8)");
 
         }
-
-        private decimal? TryGetSensorValue(List<AirMap.Models.SensorDataValues>? values, string type)
-        {
-            var val = values?.FirstOrDefault(v => v.value_type == type)?.value;
-            return decimal.TryParse(val, out var parsed) ? parsed : (decimal?)null;
-        }
-
-        public async Task FetchAndSaveData(string url, string apiKey)
-        {
-            using var request = new HttpRequestMessage(HttpMethod.Get, url);
-            if (!string.IsNullOrEmpty(apiKey))
-            {
-                request.Headers.Add("X-Api-Key", apiKey);
-            }
-
-            var response = await _httpClient.SendAsync(request);
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Response content: {content}");
-
-                if (url.Contains("looko2"))
-                {
-                    var root = JsonConvert.DeserializeObject<AirMap.Models.Root>(content);
-                    if (root?.Sensors != null)
-                    {
-                        using (var scope = _serviceScopeFactory.CreateScope())
-                        {
-                            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                            foreach (var sensor in root.Sensors)
-                            {
-                                if (sensor.Lat.HasValue && sensor.Lon.HasValue)
-                                {
-                                    var airQualityReading = new AirQualityReading
-                                    {
-                                        Latitude = (decimal)sensor.Lat.Value,
-                                        Longitude = (decimal)sensor.Lon.Value,
-                                        PM1 = sensor.PM1.HasValue ? (decimal?)sensor.PM1.Value : null,
-                                        PM25 = sensor.PM25.HasValue ? (decimal?)sensor.PM25.Value : null,
-                                        PM10 = sensor.PM10.HasValue ? (decimal?)sensor.PM10.Value : null,
-                                        Timestamp = sensor.Epoch?.ToString()
-                                    };
-
-                                    dbContext.AirQualityReadings.Add(airQualityReading);
-                                }
-                            }
-
-                            
-                            await dbContext.SaveChangesAsync();
-
-
-                        }
-                    }
-                }
-
-                else if (url.Contains("sensor.community"))
-                {
-                    var sensorSets = JsonConvert.DeserializeObject<List<AirMap.Models.SensorSet2>>(content);
-                    if (sensorSets != null)
-                    {
-                        using (var scope = _serviceScopeFactory.CreateScope())
-                        {
-                            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                            foreach (var sensorSet in sensorSets)
-                            {
-                                if (sensorSet.location?.latitude != null && sensorSet.location?.longitude != null)
-                                {
-                                    var airQualityReading = new AirQualityReading
-                                    {
-                                        Latitude = decimal.Parse(sensorSet.location.latitude),
-                                        Longitude = decimal.Parse(sensorSet.location.longitude),
-                                        Timestamp = sensorSet.timestamp?.ToString(),
-                                        PM1 = TryGetSensorValue(sensorSet.sensordatavalues, "P1"),
-                                        PM25 = TryGetSensorValue(sensorSet.sensordatavalues, "P2"),
-                                        PM10 = TryGetSensorValue(sensorSet.sensordatavalues, "P4")
-                                    };
-
-                                    await dbContext.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Source1Models ON");
-
-                                    dbContext.AirQualityReadings.Add(airQualityReading);
-                                }
-                            }
-
-                            try
-                            {
-                                await dbContext.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Source1Models OFF");
-                                await dbContext.SaveChangesAsync();
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine("❌ Błąd podczas zapisu danych do bazy:");
-                                Console.WriteLine(ex.Message);
-                                // Tu możesz dodać np. logowanie do pliku albo dodatkowy retry
-                            }
-
-                        }
-                    }
-                }
-
-            }
-            else
-            {
-                Console.WriteLine("---------------------------");
-                Console.WriteLine($"Failed to fetch data from {url}");
-                Console.WriteLine($"Status code: {response.StatusCode}");
-                Console.WriteLine($"Reason: {response.ReasonPhrase}");
-                Console.WriteLine("---------------------------");
-            }
-        }
     }
     
     // Klasa reprezentująca dane w tabeli
@@ -221,8 +100,8 @@
     {
         [Key]
         public long Id { get; set; }
-        public decimal Latitude { get; set; }
-        public decimal Longitude { get; set; }
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
         public decimal? PM1 { get; set; }
         public decimal? PM25 { get; set; }
         public decimal? PM10 { get; set; }
@@ -287,7 +166,7 @@
         public decimal? GetSensorValue(string valueType)
         {
             var value = SensorDataValues?.FirstOrDefault(v => v.ValueType == valueType)?.Value;
-            return value != null ? decimal.Parse(value) : null;
+            if (decimal.TryParse(value, out var result)) return result; return null;
 
         }
     }
