@@ -16,6 +16,7 @@
         public DbSet<AirQualityReading> AirQualityReadings { get; set; } = null!;
         public DbSet<Source1Model> Source1Models { get; set; } = null!;
         public DbSet<Source2Model> Source2Models { get; set; } = null!;
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)       {    }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
