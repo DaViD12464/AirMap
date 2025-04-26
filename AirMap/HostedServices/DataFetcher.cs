@@ -35,7 +35,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
             string? LookO2ApiKey = _configuration["LookO2ApiKey"];
             if (!string.IsNullOrEmpty(Look02ApiString) && !string.IsNullOrEmpty(LookO2ApiKey))
             {
-                Console.WriteLine("---------------------------");
+                Console.WriteLine("\n---------------------------");
                 Console.WriteLine($"LookO2 API string: {Look02ApiString + LookO2ApiKey}");
                 Console.WriteLine("---------------------------");
                 // Pass the required parameters to FetchAndSaveData
@@ -43,7 +43,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
             }
             else
             {
-                Console.WriteLine("---------------------------");
+                Console.WriteLine("\n---------------------------");
                 Console.WriteLine("LookO2 API string / key is not available.");
                 Console.WriteLine("---------------------------");
             }
@@ -52,7 +52,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
             string? SensorCommunityApiString = _configuration["SensorCommunityApiString"];
             if (!string.IsNullOrEmpty(SensorCommunityApiString))
             {
-                Console.WriteLine("---------------------------");
+                Console.WriteLine("\n---------------------------");
                 Console.WriteLine($"SensorCommunity API string: {SensorCommunityApiString}");
                 Console.WriteLine("---------------------------");
                 // Pass the required parameters to FetchAndSaveData
@@ -60,7 +60,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
             }
             else
             {
-                Console.WriteLine("---------------------------");
+                Console.WriteLine("\n---------------------------");
                 Console.WriteLine("SensorCommunity API string / key is not available.");
                 Console.WriteLine("---------------------------");
             }
@@ -97,11 +97,11 @@ public class AirQualityHostedService : IHostedService, IDisposable
                     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
                     // Filter out duplicates and null/empty Device values
-                    var filteredModels = Source1Data
+                    var filteredModels = Source1Data?
                         .Where(m => !string.IsNullOrEmpty(m.Device)) // Exclude null/empty Device
                         .GroupBy(m => m.Device) // Group by Device
                         .Select(g => g.First()) // Take the first unique entry
-                        .ToList();
+                        .ToList() ?? new List<Source1Model>();
                     // Check for existing devices in the database
                     var existingDevices = dbContext.Source1Models
                         .Select(m => m.Device)
@@ -114,18 +114,21 @@ public class AirQualityHostedService : IHostedService, IDisposable
 
                     if (Source1Data != null)
                     {
+                        var i=1;
                         foreach (var sensor in Source1Data)
                         {
+                            var timeValue = sensor.Epoch == "0" ? null : DateTimeOffset.FromUnixTimeSeconds(long.Parse(sensor.Epoch!)).ToString();
+
                             if (sensor.Lat.HasValue && sensor.Lon.HasValue)
                             {
                                 var Sensor1Models = new Source1Model
                                 {
-                                    Timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                                    Timestamp = timeValue,
                                     Device = sensor.Device,
                                     PM1 = !string.IsNullOrEmpty(sensor.PM1) ? sensor.PM1 : null,
                                     PM25 = !string.IsNullOrEmpty(sensor.PM25) ? sensor.PM25 : null,
                                     PM10 = !string.IsNullOrEmpty(sensor.PM10) ? sensor.PM10 : null,
-                                    Epoch = sensor.Epoch?.ToString(),
+                                    Epoch = sensor.Epoch?.ToString(), //-- redundant Epoch value as we convert it to DateTime
                                     Lat = (decimal)sensor.Lat.Value,
                                     Lon = (decimal)sensor.Lon.Value,
                                     Name = sensor.Name,
@@ -143,24 +146,28 @@ public class AirQualityHostedService : IHostedService, IDisposable
 
                                 dbContext.Source1Models.Add(Sensor1Models);
                                 dbContext.SaveChanges();
+                                
+                                Console.Write(" "+i+" "); //Added as replacement for EF logging - will track NO. of records added
+                                i++;
                             }
                             else
                             {
-                                Console.WriteLine($"Sensor data is missing latitude or longitude. Skipped data.");
+                                Console.WriteLine($"\nSensor data is missing latitude or longitude. Skipped data.\n");
                             }
                         }
+                     
                     }
                     else
-                        Console.WriteLine("Source1Data is empty.");
+                        Console.WriteLine("\nSource1Data is empty.\n");
                 }
             }
                     
         }
         else
         {
-            Console.WriteLine($"Failed to fetch data from {url}");
-            Console.WriteLine($"Status code: {response.StatusCode}");
-            Console.WriteLine($"Reason: {response.ReasonPhrase}");
+            Console.WriteLine($"\nFailed to fetch data from {url}\n");
+            Console.WriteLine($"\nStatus code: {response.StatusCode}\n");
+            Console.WriteLine($"\nReason: {response.ReasonPhrase} \n");
         }
     }
 

@@ -140,7 +140,7 @@
         public string? PM1 { get; set; }
         public string? PM25 { get; set; }
         public string? PM10 { get; set; }
-        public string? Epoch { get; set; }
+        public string? Epoch { get; set; } // epoch is datetime value in UNIX -- value during fetching data converted to DateTime
         public decimal? Lat { get; set; }
         public decimal? Lon { get; set; }
         public string? Name { get; set; }
