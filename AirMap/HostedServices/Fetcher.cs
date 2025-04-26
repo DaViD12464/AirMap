@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using AirMap.Models;
 using AirMap.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 
 namespace AirMap.HostedServices
 {
@@ -47,6 +49,30 @@ namespace AirMap.HostedServices
                             {
                                 if (sensor.Lat.HasValue && sensor.Lon.HasValue)
                                 {
+                                    var Sensor1Models = new Source1Model
+                                    {
+                                        Timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                                        Device = sensor.Device ?? "Unknown_Device",
+                                        PM1 = sensor.PM1.HasValue ? sensor.PM1.Value.ToString() : null,
+                                        PM25 = sensor.PM25.HasValue ? sensor.PM25.Value.ToString() : null,
+                                        PM10 = sensor.PM10.HasValue ? sensor.PM10.Value.ToString() : null,
+                                        Epoch = sensor.Epoch?.ToString(),
+                                        Lat = (decimal)sensor.Lat.Value,
+                                        Lon = (decimal)sensor.Lon.Value,
+                                        Name = sensor.Name,
+                                        Indoor = sensor.Indoor?.ToString(),
+                                        Temperature = sensor.Temperature?.ToString(),
+                                        Humidity = sensor.Humidity?.ToString(),
+                                        HCHO = sensor.HCHO?.ToString(),
+                                        AveragePM1 = sensor.AveragePM1?.ToString(),
+                                        AveragePM25 = sensor.AveragePM25?.ToString(),
+                                        AveragePM10 = sensor.AveragePM10?.ToString(),
+                                        IJPString = sensor.IJPString,
+                                        IJPDescription = sensor.IJPDescription,
+                                        Color = sensor.Color,
+                                    };
+                                    dbContext.Source1Models.Add(Sensor1Models);
+
                                     var airQualityReading = new AirQualityReading
                                     {
                                         Latitude = (decimal)sensor.Lat.Value,
@@ -54,7 +80,8 @@ namespace AirMap.HostedServices
                                         PM1 = sensor.PM1.HasValue ? (decimal?)sensor.PM1.Value : null,
                                         PM25 = sensor.PM25.HasValue ? (decimal?)sensor.PM25.Value : null,
                                         PM10 = sensor.PM10.HasValue ? (decimal?)sensor.PM10.Value : null,
-                                        Timestamp = sensor.Epoch?.ToString()
+                                        Timestamp = sensor.Epoch?.ToString(),
+                                       
                                     };
 
                                     dbContext.AirQualityReadings.Add(airQualityReading);
@@ -83,15 +110,14 @@ namespace AirMap.HostedServices
                                 {
                                     var airQualityReading = new AirQualityReading
                                     {
-                                        Latitude = decimal.TryParse(sensorSet.location.latitude, out var lat) ? lat : (decimal?)null,
-                                        Longitude = decimal.TryParse(sensorSet.location.longitude, out var lon) ? lon : (decimal?)null,
+                                        //Latitude = decimal.TryParse(sensorSet.location.latitude, out var lat) ? lat : (decimal?)null,
+                                        //Longitude = decimal.TryParse(sensorSet.location.longitude, out var lon) ? lon : (decimal?)null,
                                         Timestamp = sensorSet.timestamp?.ToString(),
                                         PM1 = TryGetSensorValue(sensorSet.sensordatavalues, "P1"),
                                         PM25 = TryGetSensorValue(sensorSet.sensordatavalues, "P2"),
                                         PM10 = TryGetSensorValue(sensorSet.sensordatavalues, "P4")
                                     };
 
-                                    await dbContext.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Source1Models ON");
 
                                     dbContext.AirQualityReadings.Add(airQualityReading);
                                 }
@@ -99,7 +125,6 @@ namespace AirMap.HostedServices
 
                             try
                             {
-                                await dbContext.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Source1Models OFF");
                                 await dbContext.SaveChangesAsync();
                             }
                             catch (Exception ex)
@@ -130,4 +155,8 @@ namespace AirMap.HostedServices
             return decimal.TryParse(val, out var parsed) ? parsed : (decimal?)null;
         }
     }
+
+
+
 }
+*/
