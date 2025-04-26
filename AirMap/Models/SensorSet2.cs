@@ -7,7 +7,7 @@ namespace AirMap.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long? id { get; set; }
+        public long id { get; set; }
         public string? sampling_rate { get; set; }
         public DateTime? timestamp { get; set; }
         public Location? location { get; set; }
@@ -17,7 +17,7 @@ namespace AirMap.Models
 
     public class Location
     {
-        public long? id { get; set; }
+        public long id { get; set; }
         public string? latitude { get; set; }
         public string? longitude { get; set; }
         public string? altitude { get; set; }

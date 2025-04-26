@@ -1,6 +1,8 @@
 ﻿using AirMap.Data;
 using Newtonsoft.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using static System.Formats.Asn1.AsnWriter;
 
 public class AirQualityHostedService : IHostedService, IDisposable
 {
@@ -75,7 +77,8 @@ public class AirQualityHostedService : IHostedService, IDisposable
 
     private async Task FetchAndSaveData(string url, string? apiKey)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        var requestUrl = url + apiKey;
+        using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
         if (!string.IsNullOrEmpty(apiKey))
         {
             request.Headers.Add("X-Api-Key", apiKey);
@@ -85,46 +88,82 @@ public class AirQualityHostedService : IHostedService, IDisposable
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
-            //Console.WriteLine($"Response content: {content}");
 
             if (url.Contains("looko2"))
             {
-                // Parse and save LookO2 data
-                var source2Models = JsonConvert.DeserializeObject<List<Source2Model>>(content);  // using Source2Model from AppDbContext  instead of Models/SensorSet1
-                if (source2Models != null)
+                var Source1Data = JsonConvert.DeserializeObject<List<Source1Model>>(content);
+                using (var scope = _serviceScopeFactory.CreateScope())
                 {
-                    using (var scope = _serviceScopeFactory.CreateScope())
+                    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                    // Filter out duplicates and null/empty Device values
+                    var filteredModels = Source1Data
+                        .Where(m => !string.IsNullOrEmpty(m.Device)) // Exclude null/empty Device
+                        .GroupBy(m => m.Device) // Group by Device
+                        .Select(g => g.First()) // Take the first unique entry
+                        .ToList();
+                    // Check for existing devices in the database
+                    var existingDevices = dbContext.Source1Models
+                        .Select(m => m.Device)
+                        .ToHashSet();
+
+                    // Exclude devices that already exist in the database
+                    var newModels = filteredModels
+                        .Where(m => !existingDevices.Contains(m.Device))
+                        .ToList();
+
+                    if (Source1Data != null)
                     {
-                        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                        dbContext.Source2Models.AddRange(source2Models);
-                        await dbContext.SaveChangesAsync();
+                        foreach (var sensor in Source1Data)
+                        {
+                            if (sensor.Lat.HasValue && sensor.Lon.HasValue)
+                            {
+                                var Sensor1Models = new Source1Model
+                                {
+                                    Timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                                    Device = sensor.Device,
+                                    PM1 = !string.IsNullOrEmpty(sensor.PM1) ? sensor.PM1 : null,
+                                    PM25 = !string.IsNullOrEmpty(sensor.PM25) ? sensor.PM25 : null,
+                                    PM10 = !string.IsNullOrEmpty(sensor.PM10) ? sensor.PM10 : null,
+                                    Epoch = sensor.Epoch?.ToString(),
+                                    Lat = (decimal)sensor.Lat.Value,
+                                    Lon = (decimal)sensor.Lon.Value,
+                                    Name = sensor.Name,
+                                    Indoor = sensor.Indoor?.ToString(),
+                                    Temperature = sensor.Temperature?.ToString(),
+                                    Humidity = sensor.Humidity?.ToString(),
+                                    HCHO = sensor.HCHO?.ToString(),
+                                    AveragePM1 = sensor.AveragePM1?.ToString(),
+                                    AveragePM25 = sensor.AveragePM25?.ToString(),
+                                    AveragePM10 = sensor.AveragePM10?.ToString(),
+                                    IJPString = sensor.IJPString,
+                                    IJPDescription = sensor.IJPDescription,
+                                    Color = sensor.Color,
+                                };
+
+                                dbContext.Source1Models.Add(Sensor1Models);
+                                dbContext.SaveChanges();
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Sensor data is missing latitude or longitude. Skipped data.");
+                            }
+                        }
                     }
+                    else
+                        Console.WriteLine("Source1Data is empty.");
                 }
             }
-            else if (url.Contains("sensor.community"))
-            {
-                // Parse and save Sensor.Community data
-                var source1Models = JsonConvert.DeserializeObject<List<Source1Model>>(content); // using Source1Model from AppDbContext instead of Models/SensorSet2
-                if (source1Models != null)
-                {
-                    using (var scope = _serviceScopeFactory.CreateScope())
-                    {
-                        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                        dbContext.Source1Models.AddRange(source1Models);
-                        await dbContext.SaveChangesAsync();
-                    }
-                }
-            }
+                    
         }
         else
         {
-            Console.WriteLine("---------------------------");
             Console.WriteLine($"Failed to fetch data from {url}");
             Console.WriteLine($"Status code: {response.StatusCode}");
             Console.WriteLine($"Reason: {response.ReasonPhrase}");
-            Console.WriteLine("---------------------------");
         }
     }
+
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
