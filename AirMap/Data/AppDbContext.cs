@@ -101,14 +101,14 @@
     {
         [Key]
         public long Id { get; set; }
-        public decimal? Latitude { get; set; }
-        public decimal? Longitude { get; set; }
+        public decimal Latitude { get; set; }
+        public decimal Longitude { get; set; }
         public decimal? PM1 { get; set; }
         public decimal? PM25 { get; set; }
         public decimal? PM10 { get; set; }
         public string? Name { get; set; }
 
-        [Column(TypeName = "bit")]  // Specify correct SQL type
+        [Column(TypeName = "bit")] 
         public bool Indoor { get; set; }
         public string? Timestamp { get; set; }
         public decimal? Temperature { get; set; }
@@ -124,14 +124,14 @@
     }
 
 
-    // Modele dla danych z dwóch źródeł (uproszczone)
-    public class Source1Model
+    // Modele dla danych 
+    public class Source1Model //LookO2
     {
         public Source1Model()
         {
-            Device = string.Empty; // Ensure Device is always initialized
+            Device = string.Empty;
         }
-
+        [JsonIgnore]
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
@@ -141,8 +141,8 @@
         public string? PM25 { get; set; }
         public string? PM10 { get; set; }
         public string? Epoch { get; set; }
-        public decimal Lat { get; set; }
-        public decimal Lon { get; set; }
+        public decimal? Lat { get; set; }
+        public decimal? Lon { get; set; }
         public string? Name { get; set; }
         public string? Indoor { get; set; }
         public string? Temperature { get; set; }
@@ -157,7 +157,7 @@
     }
 
 
-    public class Source2Model
+    public class Source2Model //sensor community
     {
         public long Id { get; set; }
         public string? Timestamp { get; set; }
