@@ -2,7 +2,7 @@ using AirMap.Controllers;
 using AirMap.Models;
 using Microsoft.EntityFrameworkCore;
 using AirMap.Data;
-using AirMap.HostedServices;
+// using AirMap.HostedServices; ------- unneccessary service?
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,14 +19,28 @@ builder.Services.AddSingleton(configuration);
 builder.Services.AddHttpClient<AirQualityHostedService>(); // Rejestracja HttpClient dla HostedService
 builder.Services.AddHostedService<AirQualityHostedService>(); // Rejestracja HostedService jako singleton
 builder.Services.AddHostedService<SensorProcessor>(); // Rejestracja innego HostedService
-builder.Services.AddHttpClient<Fetcher>(); // Rejestracja Fetcher jako us³ugi
-builder.Services.AddScoped<Fetcher>(); // Rejestracja Fetcher jako us³ugi o krótkim czasie ¿ycia
+
+//builder.Services.AddHttpClient<Fetcher>(); // Rejestracja Fetcher jako us³ugi    ------- unneccessary service?
+//builder.Services.AddScoped<Fetcher>(); // Rejestracja Fetcher jako us³ugi o krótkim czasie ¿ycia ------- unneccessary service?
 
 
 // Konfiguracja DbContext z u¿yciem SQL Server
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),  // Konfiguracja DbContext z SQL Server
-    providerOptions => providerOptions.EnableRetryOnFailure()));  // przy pierwszej próbie po³¹czenia z baz¹ danych baza time-outuje, próba naprawienia poprzez retry
+builder.Services.AddDbContext<AppDbContext>(
+    options =>
+    {
+        options.UseSqlServer(
+            builder.Configuration.GetConnectionString("DefaultConnection"),
+            sqlServerOptions =>
+            { // przy pierwszej próbie po³¹czenia z baz¹ danych baza time-outuje - próba naprawienia poprzez retryonfailure
+                sqlServerOptions.EnableRetryOnFailure(5); // Retry up to 5 times when connection times out
+                sqlServerOptions.CommandTimeout(60); // Retry timeout as 60 seconds
+            }
+        );
+        options.LogTo(Console.WriteLine, LogLevel.Warning); // Log warnings to the console
+    });
+
+
+
 
 // Test po³¹czenia z baz¹ danych
 var ConStr = builder.Configuration.GetConnectionString("DefaultConnection");
