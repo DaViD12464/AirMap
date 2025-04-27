@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Xml;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using AirMap.DTOs;
 
 //do przeróbki całkowitej pod DB
 
@@ -89,7 +90,7 @@ public class DataService : ControllerBase
     //Set1 for LookO2
     private static List<Sensor> ProcessSet1(string jsonData)
     {
-        var sensors = JsonConvert.DeserializeObject<List<SensorSet1>>(jsonData) ?? new List<SensorSet1>();
+        var sensors = JsonConvert.DeserializeObject<List<LookO2>>(jsonData) ?? new List<LookO2>();
         return sensors.Select(s => new Sensor
         {
             Device = s.Device,
@@ -122,7 +123,7 @@ public class DataService : ControllerBase
     //Set2 for Sensor-Community
     private static List<Sensor> ProcessSet2(string jsonData)
     {
-        var rawData = JsonConvert.DeserializeObject<List<SensorSet2>>(jsonData) ?? new List<SensorSet2>();
+        var rawData = JsonConvert.DeserializeObject<List<SensorCommunity>>(jsonData) ?? new List<SensorCommunity>();
 
         var sensors = new List<Sensor>();
 

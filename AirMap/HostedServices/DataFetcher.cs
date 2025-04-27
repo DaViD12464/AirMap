@@ -100,22 +100,19 @@ public class AirQualityHostedService : IHostedService, IDisposable
                     var filteredModels = Source1Data?
                         .Where(m => !string.IsNullOrEmpty(m.Device)) // Exclude null/empty Device
                         .GroupBy(m => m.Device) // Group by Device
-                        .Select(g => g.First()) // Take the first unique entry
-                        .ToList() ?? new List<Source1Model>();
+                        .Select(g => g.First()); // Take the first unique entry
                     // Check for existing devices in the database
                     var existingDevices = dbContext.Source1Models
-                        .Select(m => m.Device)
-                        .ToHashSet();
+                        .Select(m => m.Device);
 
                     // Exclude devices that already exist in the database
                     var newModels = filteredModels
-                        .Where(m => !existingDevices.Contains(m.Device))
-                        .ToList();
+                        .Where(m => !existingDevices.Contains(m.Device));
 
                     if (Source1Data != null)
                     {
                         var i=1;
-                        foreach (var sensor in Source1Data)
+                        foreach (var sensor in newModels)
                         {
                             var timeValue = sensor.Epoch == "0" ? null : DateTimeOffset.FromUnixTimeSeconds(long.Parse(sensor.Epoch!)).ToString();
 
@@ -144,8 +141,8 @@ public class AirQualityHostedService : IHostedService, IDisposable
                                     Color = sensor.Color,
                                 };
 
-                                dbContext.Source1Models.Add(Sensor1Models);
-                                dbContext.SaveChanges();
+                                dbContext.Source1Models.Append(Sensor1Models);
+                                await dbContext.SaveChangesAsync();
                                 
                                 Console.Write(" "+i+" "); //Added as replacement for EF logging - will track NO. of records added
                                 i++;

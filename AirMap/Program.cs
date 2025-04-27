@@ -32,8 +32,11 @@ builder.Services.AddDbContext<AppDbContext>(
             builder.Configuration.GetConnectionString("DefaultConnection"),
             sqlServerOptions =>
             { // przy pierwszej próbie po³¹czenia z baz¹ danych baza time-outuje - próba naprawienia poprzez retryonfailure
-                sqlServerOptions.EnableRetryOnFailure(5); // Retry up to 5 times when connection times out
-                sqlServerOptions.CommandTimeout(60); // Retry timeout as 60 seconds
+                sqlServerOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(10),
+                    errorNumbersToAdd: null
+                    ); // Retry up to 5 times when connection times out
             }
         );
         options.LogTo(Console.WriteLine, LogLevel.Warning); // Log warnings to the console
@@ -67,12 +70,11 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseAuthentication();
 
-
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/healthz");
 
 
 
