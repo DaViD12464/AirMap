@@ -142,8 +142,9 @@ public class AirQualityHostedService : IHostedService, IDisposable
                                     Color = sensor.Color,
                                 };
 
-                                dbContext.Source1Models.Add(Sensor1Models);
+                                dbContext.Source1Models.Append(Sensor1Models);
                                 await dbContext.SaveChangesAsync();
+                                
                                 Console.Write(" "+i+" "); //Added as replacement for EF logging - will track NO. of records added
                                 i++;
                             }
