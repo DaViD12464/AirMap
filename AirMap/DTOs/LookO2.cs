@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace AirMap.Models
+namespace AirMap.DTOs
 { // data set for looko2
 
-    public class SensorSet1
+    public class LookO2
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -37,6 +37,6 @@ namespace AirMap.Models
     // Klasa obsługująca listę czujników
     public class Root
     {
-        public List<SensorSet1>? Sensors { get; set; }
+        public List<LookO2>? Sensors { get; set; }
     }
 }

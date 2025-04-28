@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace AirMap.Models
+namespace AirMap.DTOs
 { // data set for sensor community
-    public class SensorSet2
+    public class SensorCommunity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
