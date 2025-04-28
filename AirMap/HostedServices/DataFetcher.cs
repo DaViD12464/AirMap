@@ -99,6 +99,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
                     // Filter out duplicates and null/empty Device values
                     var filteredModels = Source1Data?
                         .Where(m => !string.IsNullOrEmpty(m.Device)) // Exclude null/empty Device
+                        .Where(m => m.Lat != 0 || m.Lon != 0) //ensure devices with Lat == 0 and Lon == 0 are not included
                         .GroupBy(m => m.Device) // Group by Device
                         .Select(g => g.First()); // Take the first unique entry
                     // Check for existing devices in the database
@@ -106,7 +107,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
                         .Select(m => m.Device);
 
                     // Exclude devices that already exist in the database
-                    var newModels = filteredModels
+                    var newModels = filteredModels!
                         .Where(m => !existingDevices.Contains(m.Device));
 
                     if (Source1Data != null)
@@ -141,9 +142,8 @@ public class AirQualityHostedService : IHostedService, IDisposable
                                     Color = sensor.Color,
                                 };
 
-                                dbContext.Source1Models.Append(Sensor1Models);
+                                dbContext.Source1Models.Add(Sensor1Models);
                                 await dbContext.SaveChangesAsync();
-                                
                                 Console.Write(" "+i+" "); //Added as replacement for EF logging - will track NO. of records added
                                 i++;
                             }
