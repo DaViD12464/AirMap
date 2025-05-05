@@ -17,15 +17,15 @@ public class DataService : ControllerBase
     {
         _logger = logger;
     }
-
-
+} //additional }
+/*
     [HttpPost("process-sensors")]
     public Task<IActionResult> ProcessSensorsData()  //public async Task - removed to remove warn from Error List as this file is to be rebuilt
     {
         return null; // additional "return null;" to avoid compilation error
     }
-} //additional }
-/*
+
+
 try
 {
     string folderPath = "Data\\api\\sensors";
