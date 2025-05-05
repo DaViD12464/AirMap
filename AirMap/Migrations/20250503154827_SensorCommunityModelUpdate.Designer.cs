@@ -3,6 +3,7 @@ using AirMap.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AirMap.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250503154827_SensorCommunityModelUpdate")]
+    partial class SensorCommunityModelUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -85,7 +88,7 @@ namespace AirMap.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AirQualityReading", (string)null);
+                    b.ToTable("AirQualityReading");
                 });
 
             modelBuilder.Entity("AirMap.Data.Location", b =>
@@ -116,7 +119,7 @@ namespace AirMap.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Location", (string)null);
+                    b.ToTable("Location");
                 });
 
             modelBuilder.Entity("AirMap.Data.Sensor", b =>
@@ -137,7 +140,7 @@ namespace AirMap.Migrations
 
                     b.HasIndex("SensorTypeId");
 
-                    b.ToTable("Sensor", (string)null);
+                    b.ToTable("Sensor");
                 });
 
             modelBuilder.Entity("AirMap.Data.SensorDataValue", b =>
@@ -161,7 +164,7 @@ namespace AirMap.Migrations
 
                     b.HasIndex("Source2ModelId");
 
-                    b.ToTable("SensorDataValue", (string)null);
+                    b.ToTable("SensorDataValue");
                 });
 
             modelBuilder.Entity("AirMap.Data.SensorType", b =>
@@ -180,7 +183,7 @@ namespace AirMap.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SensorType", (string)null);
+                    b.ToTable("SensorType");
                 });
 
             modelBuilder.Entity("AirMap.Data.Source1Model", b =>
@@ -254,7 +257,7 @@ namespace AirMap.Migrations
                     b.HasIndex("Device")
                         .IsUnique();
 
-                    b.ToTable("Source1Models", (string)null);
+                    b.ToTable("Source1Models");
                 });
 
             modelBuilder.Entity("AirMap.Data.Source2Model", b =>
@@ -283,7 +286,7 @@ namespace AirMap.Migrations
 
                     b.HasIndex("SensorId");
 
-                    b.ToTable("Source2Models", (string)null);
+                    b.ToTable("Source2Models");
                 });
 
             modelBuilder.Entity("AirMap.Data.Sensor", b =>
