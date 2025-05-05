@@ -9,9 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Data\api\**" />
+    <Compile Remove="Data\output\**" />
     <Compile Remove="Nowy folder\**" />
+    <Content Remove="Data\api\**" />
+    <Content Remove="Data\output\**" />
     <Content Remove="Nowy folder\**" />
+    <EmbeddedResource Remove="Data\api\**" />
+    <EmbeddedResource Remove="Data\output\**" />
     <EmbeddedResource Remove="Nowy folder\**" />
+    <None Remove="Data\api\**" />
+    <None Remove="Data\output\**" />
     <None Remove="Nowy folder\**" />
   </ItemGroup>
 
@@ -30,11 +38,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Data\api\sensors\" />
-    <Folder Include="Data\output\" />
   </ItemGroup>
 
 </Project>
