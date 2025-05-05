@@ -90,7 +90,8 @@ public class AirQualityHostedService : IHostedService, IDisposable
             var content = await response.Content.ReadAsStringAsync();
 
             if (url.Contains("looko2"))
-            {
+            { 
+                Console.WriteLine("\n\nAdding LookO2 data to DB...\n\n");
                 var Source1Data = JsonConvert.DeserializeObject<List<Source1Model>>(content);
                 using (var scope = _serviceScopeFactory.CreateScope())
                 {
@@ -101,7 +102,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
                         .Where(m => !string.IsNullOrEmpty(m.Device)) // Exclude null/empty Device
                         .Where(m => m.Lat != 0 || m.Lon != 0) //ensure devices with Lat == 0 and Lon == 0 are not included
                         .GroupBy(m => m.Device) // Group by Device
-                        .Select(g => g.First()); // Take the first unique entry
+                        .SelectMany(g => g);
                     // Check for existing devices in the database
                     var existingDevices = dbContext.Source1Models
                         .Select(m => m.Device);
@@ -141,7 +142,8 @@ public class AirQualityHostedService : IHostedService, IDisposable
                                     IJPDescription = sensor.IJPDescription,
                                     Color = sensor.Color,
                                 };
-
+                                // TODO: Check if device already exists in DB - if yes, update device data - if not, add new device
+                                //dbContext.Source1Models.Update(Sensor1Models);
                                 dbContext.Source1Models.Append(Sensor1Models);
                                 await dbContext.SaveChangesAsync();
                                 
@@ -157,6 +159,85 @@ public class AirQualityHostedService : IHostedService, IDisposable
                     }
                     else
                         Console.WriteLine("\nSource1Data is empty.\n");
+                }
+            }
+
+            if (url.Contains("sensor.community"))
+            {
+                Console.WriteLine("\n\nAdding sensor.community data to DB...\n\n");
+                var Source2Data = JsonConvert.DeserializeObject<List<Source2Model>>(content);
+                using (var scope = _serviceScopeFactory.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    var filteredModels = Source2Data?
+                        .Where(m => m.Location != null && m.SensorDataValues != null) // Exclude null/empty Location and SensorDataValues
+                        .Where(m => m.Location!.Latitude != 0 || m.Location!.Longitude != 0) //ensure devices with Lat == 0 and Lon == 0 are not included
+                        .GroupBy(m => m.SensorDataValues!.FirstOrDefault()?.ValueType) // Group by ValueType
+                        .SelectMany(g => g); // Take the first unique entry
+                    //TODO:add filtering of existing devices!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    if (Source2Data != null)
+                    {
+                        var i = 1;
+                        foreach (var sensor in Source2Data) //change Source2Data for filtered data!!
+                        {
+                            if (sensor.Location?.Latitude != null && sensor.Location?.Longitude != null)
+                            {
+                                var sensor2Model = new Source2Model  //TODO: fix adding pulled Id's data to database instead of identity inserted by EF/SQL DB (Identity Insert error)
+                                {
+                                    //Id = sensor.Id,
+                                    SamplingRate = sensor.SamplingRate,
+                                    Timestamp = sensor.Timestamp,
+                                    Location = new Location
+                                    {
+                                        //Id = sensor.Location.Id,
+                                        Latitude = sensor.Location.Latitude,
+                                        Longitude = sensor.Location.Longitude,
+                                        Altitude = sensor.Location.Altitude,
+                                        Country = sensor.Location.Country,
+                                        Indoor = sensor.Location.Indoor,
+                                        ExactLocation = sensor.Location.ExactLocation
+                                    },
+                                    Sensor = new Sensor
+                                    {
+                                        //Id = sensor.Sensor!.Id,
+                                        Pin = sensor.Sensor!.Pin,
+                                        SensorType = sensor.Sensor.SensorType == null ? null : new SensorType()
+                                        {
+                                            //Id= sensor.Sensor.SensorType.Id,
+                                            Name = sensor.Sensor.SensorType.Name,
+                                            Manufacturer = sensor.Sensor.SensorType.Manufacturer
+                                        }
+                                    },
+                                    SensorDataValues = sensor.SensorDataValues!.Select(dataValue => new SensorDataValue
+                                    {
+                                        //Id = dataValue.Id,
+                                        Value = dataValue.Value,
+                                        ValueType = dataValue.ValueType
+                                    }).ToList()
+
+                                };
+                                // TODO: Check if device already exists in DB - if yes, update device data - if not, add new device
+                                await dbContext.Source2Models.AddAsync(sensor2Model);
+                                //dbContext.Source2Models.Append(sensor2Model);
+                                try
+                                {
+                                    await dbContext.SaveChangesAsync();
+                                }
+                                catch (DbUpdateException ex)
+                                {
+                                    Console.WriteLine(ex.InnerException?.Message ?? ex.Message);
+                                    Environment.Exit(1);
+                                }
+                                Console.Write(" " + i + " "); //Added as replacement for EF logging - will track NO. of records added
+                                i++;
+                            }
+                            else
+                            {
+                                Console.WriteLine($"\nSensor data is missing latitude or longitude. Skipped data.\n");
+                            }
+                        }
+                    }
+
                 }
             }
                     
