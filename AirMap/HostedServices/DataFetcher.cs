@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using static System.Formats.Asn1.AsnWriter;
+using AirMap.Models;
 
 public class AirQualityHostedService : IHostedService, IDisposable
 {
@@ -143,10 +144,25 @@ public class AirQualityHostedService : IHostedService, IDisposable
                                     Color = sensor.Color,
                                 };
                                 // TODO: Check if device already exists in DB - if yes, update device data - if not, add new device
-                                //dbContext.Source1Models.Update(Sensor1Models);
-                                dbContext.Source1Models.Append(Sensor1Models);
-                                await dbContext.SaveChangesAsync();
-                                
+                                var existingSensor = await dbContext.Source1Models.FirstOrDefaultAsync(s => s.Device == Sensor1Models.Device);
+                                if (existingSensor != null)
+                                {
+                                    dbContext.Source1Models.Update(existingSensor);
+                                }
+                                else
+                                {
+                                    dbContext.Source1Models.Add(Sensor1Models);
+                                }
+                                try
+                                {
+                                    await dbContext.SaveChangesAsync();
+                                }
+                                catch (DbUpdateException ex)
+                                {
+                                    Console.WriteLine(ex.InnerException?.Message ?? ex.Message);
+                                    Environment.Exit(1);
+                                }
+
                                 Console.Write(" "+i+" "); //Added as replacement for EF logging - will track NO. of records added
                                 i++;
                             }
@@ -170,15 +186,30 @@ public class AirQualityHostedService : IHostedService, IDisposable
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                     var filteredModels = Source2Data?
-                        .Where(m => m.Location != null && m.SensorDataValues != null) // Exclude null/empty Location and SensorDataValues
-                        .Where(m => m.Location!.Latitude != 0 || m.Location!.Longitude != 0) //ensure devices with Lat == 0 and Lon == 0 are not included
-                        .GroupBy(m => m.SensorDataValues!.FirstOrDefault()?.ValueType) // Group by ValueType
-                        .SelectMany(g => g); // Take the first unique entry
-                    //TODO:add filtering of existing devices!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        .Where(m => m.Location != null && m.SensorDataValues != null)
+                        .Where(m => m.Location!.Latitude != 0 || m.Location!.Longitude != 0)
+                        .GroupBy(m =>
+                            $"{m.Sensor!.Pin}_{m.Location!.Latitude}_{m.Location!.Longitude}") // Unique by Pin + Lat/Lon
+                        .Select(g => g.First()); // Only take one per group
+
+                    // Check existing devices in DB (you might want a better uniqueness check here)
+                    var existingDevices = dbContext.Source2Models
+                        .Select(m => new
+                        {
+                            m.Sensor!.Pin,
+                            m.Location!.Latitude,
+                            m.Location.Longitude
+                        });
+
+                    var newModels = filteredModels!
+                        .Where(m => !existingDevices.Any(e =>
+                            e.Pin == m.Sensor!.Pin &&
+                            e.Latitude == m.Location!.Latitude &&
+                            e.Longitude == m.Location!.Longitude));
                     if (Source2Data != null)
                     {
                         var i = 1;
-                        foreach (var sensor in Source2Data) //change Source2Data for filtered data!!
+                        foreach (var sensor in newModels) //change Source2Data for filtered data!!
                         {
                             if (sensor.Location?.Latitude != null && sensor.Location?.Longitude != null)
                             {
@@ -187,7 +218,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
                                     //Id = sensor.Id,
                                     SamplingRate = sensor.SamplingRate,
                                     Timestamp = sensor.Timestamp,
-                                    Location = new Location
+                                    Location = new AirMap.Data.Location
                                     {
                                         //Id = sensor.Location.Id,
                                         Latitude = sensor.Location.Latitude,
@@ -197,11 +228,11 @@ public class AirQualityHostedService : IHostedService, IDisposable
                                         Indoor = sensor.Location.Indoor,
                                         ExactLocation = sensor.Location.ExactLocation
                                     },
-                                    Sensor = new Sensor
+                                    Sensor = new AirMap.Data.Sensor
                                     {
                                         //Id = sensor.Sensor!.Id,
                                         Pin = sensor.Sensor!.Pin,
-                                        SensorType = sensor.Sensor.SensorType == null ? null : new SensorType()
+                                        SensorType = sensor.Sensor.SensorType == null ? null : new AirMap.Data.SensorType()
                                         {
                                             //Id= sensor.Sensor.SensorType.Id,
                                             Name = sensor.Sensor.SensorType.Name,
@@ -217,8 +248,15 @@ public class AirQualityHostedService : IHostedService, IDisposable
 
                                 };
                                 // TODO: Check if device already exists in DB - if yes, update device data - if not, add new device
-                                await dbContext.Source2Models.AddAsync(sensor2Model);
-                                //dbContext.Source2Models.Append(sensor2Model);
+                                var existingSensor = await dbContext.Source2Models.FirstOrDefaultAsync(s => (s.Location!.Latitude == sensor2Model.Location!.Latitude) && (s.Location!.Longitude == sensor2Model.Location!.Longitude));
+                                if (existingSensor != null)
+                                {
+                                    dbContext.Source2Models.Update(existingSensor);
+                                }
+                                else
+                                {
+                                    dbContext.Source2Models.Add(sensor2Model);
+                                }
                                 try
                                 {
                                     await dbContext.SaveChangesAsync();
