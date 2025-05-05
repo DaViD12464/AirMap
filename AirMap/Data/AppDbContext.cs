@@ -11,12 +11,10 @@
     using System.ComponentModel.DataAnnotations.Schema;
     using System.ComponentModel.DataAnnotations;
 
-    public class AppDbContext : DbContext
+    public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
-        public DbSet<AirQualityReading> AirQualityReadings { get; set; } = null!;
         public DbSet<Source1Model> Source1Models { get; set; } = null!;
         public DbSet<Source2Model> Source2Models { get; set; } = null!;
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)       {    }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -96,7 +94,7 @@
         }
     }
     
-    // Klasa reprezentująca dane w tabeli
+    // Klasa reprezentująca dane w tabeli -- redundant table?
     public class AirQualityReading
     {
         [Key]
@@ -157,36 +155,53 @@
     }
 
 
-    public class Source2Model //sensor community
+    public class Source2Model //sensor_community
     {
+        [Key]
+        //[DatabaseGenerated(DatabaseGeneratedOption.None)]
         public long Id { get; set; }
+        public int? SamplingRate { get; set; }
         public string? Timestamp { get; set; }
         public Location? Location { get; set; }
+        public Sensor? Sensor { get; set; }
         public List<SensorDataValue>? SensorDataValues { get; set; }
 
-        public decimal? GetSensorValue(string valueType)
-        {
-            var value = SensorDataValues?.FirstOrDefault(v => v.ValueType == valueType)?.Value;
-            if (decimal.TryParse(value, out var result)) return result; return null;
-
-        }
     }
 
     public class Location
     {
+        //[DatabaseGenerated(DatabaseGeneratedOption.None)]
         public long Id { get; set; }
         public decimal Latitude { get; set; }
         public decimal Longitude { get; set; }
-        public decimal Altitude { get; set; }
+        public decimal? Altitude { get; set; }
         public string? Country { get; set; }
         public int Indoor { get; set; }
+        public int? ExactLocation { get; set; }  
+    }
+
+    public class Sensor
+    {
+        //[DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public long Id { get; set; }
+        public string? Pin { get; set; }
+        public SensorType? SensorType { get; set; }
+    }
+
+    public class SensorType
+    {
+        //[DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public long Id { get; set; }
+        public string? Name { get; set; }
+        public string? Manufacturer { get; set; }
     }
 
     public class SensorDataValue
     {
-        public long Id { get; set; }
+        //[DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public long? Id { get; set; }
         public string? Value { get; set; }
         public string? ValueType { get; set; }
     }
+
 }
-    
