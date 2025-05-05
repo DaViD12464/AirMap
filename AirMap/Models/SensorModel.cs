@@ -1,4 +1,5 @@
 ﻿using AirMap.DTOs;
+using Newtonsoft.Json.Linq;
 
 namespace AirMap.Models
 {
@@ -164,13 +165,33 @@ namespace AirMap.Models
                 LocationName = dto.LocationName
             };
         }
-
+        /// <summary>
+        /// Identity number of the sensor.
+        /// </summary>
         public long? Id { get; set; }
+        /// <summary>
+        /// SamplingRate of the sensor.
+        /// </summary>
         public int SamplingRate { get; set; }
 
+        /// <summary>
+        /// Location table reference, used for location data.
+        /// </summary>
         public Location? Location { get; set; }
+        /// <summary>
+        /// Sensor table reference, used for sensor data.
+        /// </summary>
+        public Sensor? Sensor { get; set; }
+        /// <summary>
+        /// List of SensorDataValues, used for sensor data values.
+        /// </summary>
         public List<SensorDataValues>? SensorDataValues { get; set; }
 
+        /// <summary>
+        /// Converts a SensorCommunityDto instance into a strongly typed SensorModel.
+        /// </summary>
+        /// <param name="dto">DTO object with data types fetched from source.</param>
+        /// <returns>A parsed SensorModel instance.</returns>
         public static SensorModel FromDto(SensorCommunityDto dto)
         {
             return new SensorModel
@@ -188,12 +209,19 @@ namespace AirMap.Models
                     ExactLocation = ParseBool(dto.location.ExactLocation.ToString()),
                     Indoor = ParseBool(dto.location.Indoor.ToString()),
                 },
-                //TODO: Finish the DTO SensorModel for sensor_community, apply changes to existing "location" variables
-                //Location.id = (int)dto.location?.id,
-                //Location.latitude = (decimal)dto.location?.latitude,
-                //Location.longitude = (decimal)dto.location?.longitude,
-                //Location.altitude = (decimal)dto.location?.altitude,
-
+                Sensor = new Sensor
+                {
+                    Id = dto.sensor!.id,
+                    Pin = ParseInt(dto.sensor.pin),
+                    SensorType = new SensorType()
+                    {
+                        Id = dto.sensor.sensor_type!.id,
+                        Name = dto.sensor.sensor_type.name,
+                        Manufacturer = dto.sensor.sensor_type.manufacturer
+                    }
+                },
+                SensorDataValues = ParseSensorDataValuesList(dto.sensordatavalues!)
+               
 
             };
         }
@@ -232,15 +260,112 @@ namespace AirMap.Models
                 ? DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime
                 : null;
         }
+
+        /// <summary>
+        /// Parses a list of SensorDataValues from the DTO into a strongly typed list.
+        /// Changes Value from string to double type.
+        /// </summary>
+        /// <param name="sdv">List from DTO source.</param>
+        /// <returns>Returns list of parsed items to use preferred value-types.</returns>
+        private static List<AirMap.Models.SensorDataValues> ParseSensorDataValuesList(List<AirMap.DTOs.SensorDataValues> sdv)
+        {
+            var result = new List<SensorDataValues>();
+            foreach (var item in sdv)
+            {
+                result.Add(new SensorDataValues
+                {
+                    Id = item.id,
+                    Value = ParseDouble(item.value?.ToString()),
+                    ValueType = item.value_type
+                });
+            }
+            return result;
+        }
     }
+
+    /// <summary>
+    /// Instance of Location table values with preferred value-types.
+    /// </summary>
     public class Location
-    {
+    {   /// <summary>
+        /// Identity number of the location.
+        /// </summary>
         public long? Id { get; set; }
+        /// <summary>
+        /// Latitude of the sensor's location.
+        /// </summary>
         public double? Latitude { get; set; }
+        /// <summary>
+        /// Longitude of the sensor's location.
+        /// </summary>
         public double? Longitude { get; set; }
+        /// <summary>
+        /// Altitude of the sensor's location.
+        /// </summary>
         public double? Altitude { get; set; }
+        /// <summary>
+        /// Country of the sensor's location.
+        /// </summary>
         public string? Country { get; set; }
+        /// <summary>
+        /// Indicates if the sensor is installed indoors.
+        /// </summary>
         public bool? Indoor { get; set; }
+        /// <summary>
+        /// Exact_location status of the sensor's location. Indicates if the location is exact or approximate.
+        /// </summary>
         public bool? ExactLocation { get; set; }
+    }
+    /// <summary>
+    /// Instance of Sensor class values with preferred value-types.
+    /// </summary>
+    public class Sensor
+    {
+        /// <summary>
+        /// Identity number of the sensor.
+        /// </summary>
+        public long? Id { get; set; }
+        /// <summary>
+        /// Pin used by the sensor.
+        /// </summary>
+        public int? Pin { get; set; }
+        /// <summary>
+        /// SensorType table reference, used for sensor type data.
+        /// </summary>
+        public SensorType? SensorType { get; set; }
+    }
+    /// <summary>
+    /// Instance of Location class values with preferred value-types.
+    /// </summary>
+    public class SensorType
+    {   /// <summary>
+        /// Identity number of the sensor type.
+        /// </summary>
+        public long? Id { get; set; }
+        /// <summary>
+        /// Name of the sensor.
+        /// </summary>
+        public string? Name { get; set; }
+        /// <summary>
+        /// Manufacturer of the sensor.
+        /// </summary>
+        public string? Manufacturer { get; set; }
+    }
+    /// <summary>
+    /// Instance of SensorDataValues class values with preferred value-types - used for Lists of SensorDataValues.
+    /// </summary>
+    public class SensorDataValues
+    {   /// <summary>
+        /// Identity number of the sensor data value.
+        /// </summary>
+        public long? Id { get; set; }
+        /// <summary>
+        /// Value of the sensor data, parsed from string to double.
+        /// </summary>
+        public double? Value { get; set; }
+        /// <summary>
+        /// Type of the sensor data value, presented in string.
+        /// </summary>
+        public string? ValueType { get; set; }
     }
 }
