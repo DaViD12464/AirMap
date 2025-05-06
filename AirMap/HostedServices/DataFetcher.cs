@@ -143,15 +143,17 @@ public class AirQualityHostedService : IHostedService, IDisposable
                                     IJPDescription = sensor.IJPDescription,
                                     Color = sensor.Color,
                                 };
-                                // TODO: Check if device already exists in DB - if yes, update device data - if not, add new device
                                 var existingSensor = await dbContext.Source1Models.FirstOrDefaultAsync(s => s.Device == Sensor1Models.Device);
+                                var addOrUpdate = "";
                                 if (existingSensor != null)
                                 {
                                     dbContext.Source1Models.Update(existingSensor);
+                                    addOrUpdate = "U:";
                                 }
                                 else
                                 {
                                     dbContext.Source1Models.Add(Sensor1Models);
+                                    addOrUpdate = "A:";
                                 }
                                 try
                                 {
@@ -163,7 +165,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
                                     Environment.Exit(1);
                                 }
 
-                                Console.Write(" "+i+" "); //Added as replacement for EF logging - will track NO. of records added
+                                Console.Write(" "+addOrUpdate+i+" "); //Added as replacement for EF logging - will track NO. of records added
                                 i++;
                             }
                             else
@@ -190,9 +192,9 @@ public class AirQualityHostedService : IHostedService, IDisposable
                         .Where(m => m.Location!.Latitude != 0 || m.Location!.Longitude != 0)
                         .GroupBy(m =>
                             $"{m.Sensor!.Pin}_{m.Location!.Latitude}_{m.Location!.Longitude}") // Unique by Pin + Lat/Lon
-                        .Select(g => g.First()); // Only take one per group
+                        .Select(g => g.First());
 
-                    // Check existing devices in DB (you might want a better uniqueness check here)
+                    // Check existing devices in DB (might want a better uniqueness check - currently as combination of pin_lat_lon instead of Id)
                     var existingDevices = dbContext.Source2Models
                         .Select(m => new
                         {
@@ -209,7 +211,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
                     if (Source2Data != null)
                     {
                         var i = 1;
-                        foreach (var sensor in newModels) //change Source2Data for filtered data!!
+                        foreach (var sensor in newModels) 
                         {
                             if (sensor.Location?.Latitude != null && sensor.Location?.Longitude != null)
                             {
@@ -247,15 +249,17 @@ public class AirQualityHostedService : IHostedService, IDisposable
                                     }).ToList()
 
                                 };
-                                // TODO: Check if device already exists in DB - if yes, update device data - if not, add new device
                                 var existingSensor = await dbContext.Source2Models.FirstOrDefaultAsync(s => (s.Location!.Latitude == sensor2Model.Location!.Latitude) && (s.Location!.Longitude == sensor2Model.Location!.Longitude));
+                                var addOrUpdate ="";
                                 if (existingSensor != null)
                                 {
                                     dbContext.Source2Models.Update(existingSensor);
+                                    addOrUpdate = "U:";
                                 }
                                 else
                                 {
                                     dbContext.Source2Models.Add(sensor2Model);
+                                    addOrUpdate = "A:";
                                 }
                                 try
                                 {
@@ -266,7 +270,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
                                     Console.WriteLine(ex.InnerException?.Message ?? ex.Message);
                                     Environment.Exit(1);
                                 }
-                                Console.Write(" " + i + " "); //Added as replacement for EF logging - will track NO. of records added
+                                Console.Write(" " +addOrUpdate+i + " "); //Added as replacement for EF logging - will track NO. of records added
                                 i++;
                             }
                             else
