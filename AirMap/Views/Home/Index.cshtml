@@ -29,9 +29,7 @@
 </html>
 
 @{
-	//TODO: Add protection for reading all DB records when DB is empty (reading sensors causes error when DB is empty))
     var allSensors = await DatabaseHelper.GetAllAsync<SensorModel>(DbContext);
-    //string allSensors = string.Empty;
 }
 
 <!-- Map Initialization Script -->
@@ -76,8 +74,8 @@
 
 
         sensorData.forEach(sensor => {
-            if (sensor.lat && sensor.lon) {
-                const latLng = L.latLng(sensor.lat, sensor.lon);
+            if (sensor.latitude && sensor.longitude) {
+                const latLng = L.latLng(sensor.latitude, sensor.longitude);
                 L.marker(latLng, { icon: Icon }).addTo(map)
                     .bindPopup(sensor.name || "Sensor");
             }
