@@ -1,6 +1,11 @@
 ﻿@{
     ViewData["Title"] = "Mapa z Leaflet.js";
 }
+@using AirMap.Data
+@using AirMap.Helper
+@inject AppDbContext DbContext
+
+
 
 <!DOCTYPE html>
 <html>
@@ -9,51 +14,127 @@
     <!-- Leaflet data -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 </head>
 <body>
 
     <!-- Map container -->
-    <div id="map" ></div>
+    <div id="map"></div>
 
     <!-- Link Leaflet JavaScript  -->
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-Q6EutvdmLDMb4VjRbH/N05Dg8gW/MIn/k2N3uwRI0B8=" crossorigin=""></script>
 
 </body>
-
 </html>
+
+@{
+	//TODO: Add protection for reading all DB records when DB is empty (reading sensors causes error when DB is empty))
+    var allSensors = await DatabaseHelper.GetAllAsync<SensorModel>(DbContext);
+    //string allSensors = string.Empty;
+}
 
 <!-- Map Initialization Script -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-      // map init
-      var map = L.map('map').setView([52.1143385, 19.4236714], 7); // default view
+        var map = L.map('map').setView([52.1143385, 19.4236714], 7);
 
-      // adding map layer
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
-      }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
 
-      // geolocalization check 
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function (position) {
-          // pull users location
-          var userLat = position.coords.latitude;
-          var userLng = position.coords.longitude;
 
-          // update map view to users location
-          map.setView([userLat, userLng], 13);
 
-          // pointer on actual users location
-          L.marker([userLat, userLng]).addTo(map)
-            .bindPopup("Twoja aktualna lokalizacja")
-            .openPopup();
-        }, function (error) {
-          console.error("Błąd uzyskiwania lokalizacji: ", error);
+        // --- Sensor pins ---
+        const sensorData = @Html.Raw(Json.Serialize(allSensors));
+
+        const Icon = @{
+        if (false)
+        {
+            <text>
+                            L.icon({
+                                iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/red-dot.png',
+                                iconSize: [32, 32],
+                                iconAnchor: [16, 32],
+                                popupAnchor: [0, -32]
+                            });
+            </text>
+        }
+        else
+        {
+            <text>
+                                    L.icon({
+                                        iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/green-dot.png',
+                                        iconSize: [32, 32],
+                                        iconAnchor: [16, 32],
+                                        popupAnchor: [0, -32]
+                                });
+            </text>
+        }
+    }
+
+
+        sensorData.forEach(sensor => {
+            if (sensor.lat && sensor.lon) {
+                const latLng = L.latLng(sensor.lat, sensor.lon);
+                L.marker(latLng, { icon: Icon }).addTo(map)
+                    .bindPopup(sensor.name || "Sensor");
+            }
         });
-      } else {
-        alert("Geolokalizacja nie jest obsługiwana przez Twoją przeglądarkę.");
-      }
+
+        let userLatLng = null;
+        let routingControl = null;
+        let destinationMarker = null;
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                userLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
+
+                L.marker(userLatLng).addTo(map)
+                    .bindPopup("Twoja aktualna lokalizacja")
+                    .openPopup();
+
+                map.setView(userLatLng, 10);
+            }, function (error) {
+                console.error("Błąd uzyskiwania lokalizacji: ", error);
+            });
+        } else {
+            alert("Geolokalizacja nie jest obsługiwana przez Twoją przeglądarkę.");
+        }
+
+        map.on('contextmenu', function (e) {
+            if (!userLatLng) {
+                alert("Lokalizacja użytkownika nie jest jeszcze dostępna.");
+                return;
+            }
+
+            const destLatLng = e.latlng;
+
+            if (destinationMarker) {
+                map.removeLayer(destinationMarker);
+            }
+
+            destinationMarker = L.marker(destLatLng).addTo(map)
+                .bindPopup("Nowy punkt docelowy")
+                .openPopup();
+
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            routingControl = L.Routing.control({
+                waypoints: [
+                    userLatLng,
+                    destLatLng
+                ],
+                routeWhileDragging: false,
+                show: false,
+                createMarker: function () { return null; },
+
+            }).addTo(map);
+        });
     });
 </script>
+
+
