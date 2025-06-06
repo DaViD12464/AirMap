@@ -1,4 +1,7 @@
-﻿using AirMap.DTOs;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Globalization;
+using AirMap.DTOs;
 using Newtonsoft.Json.Linq;
 
 namespace AirMap.Models
@@ -144,8 +147,8 @@ namespace AirMap.Models
                 PM25 = ParseFloat(dto.PM25),
                 PM10 = ParseFloat(dto.PM10),
                 Timestamp = ParseEpoch(dto.Epoch),
-                Latitude = ParseDouble(dto.Latitude),
-                Longitude = ParseDouble(dto.Longitude),
+                Latitude = ParseDouble(dto.Lat),
+                Longitude = ParseDouble(dto.Lon),
                 IJP = ParseInt(dto.IJP),
                 IJPStringEN = dto.IJPStringEN,
                 IJPString = dto.IJPString,
@@ -168,6 +171,7 @@ namespace AirMap.Models
         /// <summary>
         /// Identity number of the sensor.
         /// </summary>
+        [Key]
         public long? Id { get; set; }
         /// <summary>
         /// SamplingRate of the sensor.
@@ -177,6 +181,8 @@ namespace AirMap.Models
         /// <summary>
         /// Location table reference, used for location data.
         /// </summary>
+        public long? LocationId { get; set; }
+        [ForeignKey("LocationId")]
         public Location? Location { get; set; }
         /// <summary>
         /// Sensor table reference, used for sensor data.
@@ -230,7 +236,7 @@ namespace AirMap.Models
         /// Parses a string into a nullable float.
         /// </summary>
         private static float? ParseFloat(string? value) =>
-            float.TryParse(value, out var result) ? result : null;
+            float.TryParse(value, CultureInfo.InvariantCulture, out var result) ? result : null;
 
         /// <summary>
         /// Parses a string into a nullable int.
@@ -242,7 +248,7 @@ namespace AirMap.Models
         /// Parses a string into a nullable double.
         /// </summary>
         private static double? ParseDouble(string? value) =>
-            double.TryParse(value, out var result) ? result : null;
+            double.TryParse(value, CultureInfo.InvariantCulture, out var result) ? result : null;
 
         /// <summary>
         /// Parses a string ("1" or "0") into a nullable boolean.
@@ -290,10 +296,15 @@ namespace AirMap.Models
     {   /// <summary>
         /// Identity number of the location.
         /// </summary>
+        [Key]
         public long? Id { get; set; }
         /// <summary>
         /// Latitude of the sensor's location.
         /// </summary>
+        ///
+        [ForeignKey("SensorModelId")]
+        public long? SensorModelId { get; set; }
+
         public double? Latitude { get; set; }
         /// <summary>
         /// Longitude of the sensor's location.
