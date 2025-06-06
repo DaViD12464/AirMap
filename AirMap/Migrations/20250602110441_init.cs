@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AirMap.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,7 +17,6 @@ namespace AirMap.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    SensorModelId = table.Column<long>(type: "bigint", nullable: true),
                     Latitude = table.Column<double>(type: "float", nullable: true),
                     Longitude = table.Column<double>(type: "float", nullable: true),
                     Altitude = table.Column<double>(type: "float", nullable: true),
@@ -60,8 +59,8 @@ namespace AirMap.Migrations
                     IJP = table.Column<decimal>(type: "decimal(18,8)", nullable: true),
                     IJPStringEN = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true),
                     IJPString = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true),
-                    IJPDescription = table.Column<string>(type: "varchar(1000)", maxLength: 1000, nullable: true),
-                    IJPDescriptionEN = table.Column<string>(type: "varchar(1000)", maxLength: 1000, nullable: true),
+                    IJPDescription = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: true),
+                    IJPDescriptionEN = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: true),
                     Color = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: true),
                     Temperature = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     Humidity = table.Column<decimal>(type: "decimal(18,2)", nullable: true),

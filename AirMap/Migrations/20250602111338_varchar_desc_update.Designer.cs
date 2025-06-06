@@ -4,6 +4,7 @@ using AirMap.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AirMap.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250602111338_varchar_desc_update")]
+    partial class varchar_desc_update
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -139,7 +142,7 @@ namespace AirMap.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar");
 
-                    b.Property<decimal?>("SamplingRate")
+                    b.Property<decimal>("SamplingRate")
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<long?>("SensorTypeId")
@@ -226,13 +229,13 @@ namespace AirMap.Migrations
                             b1.Property<long>("SensorModelId")
                                 .HasColumnType("bigint");
 
-                            b1.Property<long>("Id")
+                            b1.Property<long?>("Id")
                                 .HasColumnType("bigint");
 
                             b1.Property<int?>("Pin")
                                 .HasColumnType("int");
 
-                            b1.Property<long?>("SensorTypeId")
+                            b1.Property<long>("SensorTypeId")
                                 .HasColumnType("bigint");
 
                             b1.HasKey("SensorModelId");
@@ -246,14 +249,17 @@ namespace AirMap.Migrations
 
                             b1.HasOne("AirMap.Models.SensorType", "SensorType")
                                 .WithMany()
-                                .HasForeignKey("SensorTypeId");
+                                .HasForeignKey("SensorTypeId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired();
 
                             b1.Navigation("SensorType");
                         });
 
                     b.Navigation("Location");
 
-                    b.Navigation("Sensor");
+                    b.Navigation("Sensor")
+                        .IsRequired();
 
                     b.Navigation("SensorDataValues");
                 });

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AirMap.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250601201339_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250602115124_nullable_update")]
+    partial class nullable_update
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,9 +50,6 @@ namespace AirMap.Migrations
 
                     b.Property<double?>("Longitude")
                         .HasColumnType("float");
-
-                    b.Property<long?>("SensorModelId")
-                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -97,19 +94,19 @@ namespace AirMap.Migrations
                         .HasColumnType("decimal(18, 8)");
 
                     b.Property<string>("IJPDescription")
-                        .HasMaxLength(1000)
+                        .HasMaxLength(512)
                         .HasColumnType("varchar");
 
                     b.Property<string>("IJPDescriptionEN")
-                        .HasMaxLength(1000)
+                        .HasMaxLength(512)
                         .HasColumnType("varchar");
 
                     b.Property<string>("IJPString")
-                        .HasMaxLength(50)
+                        .HasMaxLength(255)
                         .HasColumnType("varchar");
 
                     b.Property<string>("IJPStringEN")
-                        .HasMaxLength(50)
+                        .HasMaxLength(255)
                         .HasColumnType("varchar");
 
                     b.Property<bool?>("Indoor")
@@ -145,7 +142,7 @@ namespace AirMap.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar");
 
-                    b.Property<decimal>("SamplingRate")
+                    b.Property<decimal?>("SamplingRate")
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<long?>("SensorTypeId")
@@ -232,13 +229,13 @@ namespace AirMap.Migrations
                             b1.Property<long>("SensorModelId")
                                 .HasColumnType("bigint");
 
-                            b1.Property<long?>("Id")
+                            b1.Property<long>("Id")
                                 .HasColumnType("bigint");
 
                             b1.Property<int?>("Pin")
                                 .HasColumnType("int");
 
-                            b1.Property<long>("SensorTypeId")
+                            b1.Property<long?>("SensorTypeId")
                                 .HasColumnType("bigint");
 
                             b1.HasKey("SensorModelId");
@@ -252,17 +249,14 @@ namespace AirMap.Migrations
 
                             b1.HasOne("AirMap.Models.SensorType", "SensorType")
                                 .WithMany()
-                                .HasForeignKey("SensorTypeId")
-                                .OnDelete(DeleteBehavior.Cascade)
-                                .IsRequired();
+                                .HasForeignKey("SensorTypeId");
 
                             b1.Navigation("SensorType");
                         });
 
                     b.Navigation("Location");
 
-                    b.Navigation("Sensor")
-                        .IsRequired();
+                    b.Navigation("Sensor");
 
                     b.Navigation("SensorDataValues");
                 });
