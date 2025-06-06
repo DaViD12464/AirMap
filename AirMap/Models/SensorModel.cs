@@ -172,11 +172,11 @@ namespace AirMap.Models
         /// Identity number of the sensor.
         /// </summary>
         [Key]
-        public long? Id { get; set; }
+        public long Id { get; set; }
         /// <summary>
         /// SamplingRate of the sensor.
         /// </summary>
-        public int SamplingRate { get; set; }
+        public int? SamplingRate { get; set; }
 
         /// <summary>
         /// Location table reference, used for location data.
@@ -297,14 +297,10 @@ namespace AirMap.Models
         /// Identity number of the location.
         /// </summary>
         [Key]
-        public long? Id { get; set; }
+        public long Id { get; set; }
         /// <summary>
         /// Latitude of the sensor's location.
         /// </summary>
-        ///
-        [ForeignKey("SensorModelId")]
-        public long? SensorModelId { get; set; }
-
         public double? Latitude { get; set; }
         /// <summary>
         /// Longitude of the sensor's location.
@@ -335,7 +331,7 @@ namespace AirMap.Models
         /// <summary>
         /// Identity number of the sensor.
         /// </summary>
-        public long? Id { get; set; }
+        public long Id { get; set; }
         /// <summary>
         /// Pin used by the sensor.
         /// </summary>
@@ -352,7 +348,7 @@ namespace AirMap.Models
     {   /// <summary>
         /// Identity number of the sensor type.
         /// </summary>
-        public long? Id { get; set; }
+        public long Id { get; set; }
         /// <summary>
         /// Name of the sensor.
         /// </summary>
@@ -369,7 +365,7 @@ namespace AirMap.Models
     {   /// <summary>
         /// Identity number of the sensor data value.
         /// </summary>
-        public long? Id { get; set; }
+        public long Id { get; set; }
         /// <summary>
         /// Value of the sensor data, parsed from string to double.
         /// </summary>
