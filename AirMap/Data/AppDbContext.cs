@@ -32,23 +32,22 @@ namespace AirMap.Data
 
             entity
                 .HasOne(l => l.Location)
-                .WithMany().HasForeignKey(l => l.LocationId).IsRequired(false);
+                .WithMany().HasForeignKey(l => l.LocationId);
 
             entity.OwnsOne(s => s.Sensor, sa =>
             {
                 sa.WithOwner();
                 sa.HasOne(s => s.SensorType);
-                sa.Navigation(s=> s.SensorType).IsRequired();
+                sa.Navigation(s=> s.SensorType).IsRequired(false);
             });
-            entity.Navigation(e => e.Sensor).IsRequired();
+            entity.Navigation(e => e.Sensor).IsRequired(false);
                 
 
             modelBuilder.Entity<SensorModel>(st =>
             {
                 st.HasOne<SensorType>()
                     .WithMany()
-                    .HasForeignKey("SensorTypeId")
-                    .IsRequired(false);
+                    .HasForeignKey("SensorTypeId");
             });
 
             entity.OwnsMany(sdv => sdv.SensorDataValues)
@@ -81,19 +80,19 @@ namespace AirMap.Data
 
             entity.Property(e => e.IJPStringEN)
                 .HasColumnType("varchar")
-                .HasMaxLength(50);
+                .HasMaxLength(255);
 
             entity.Property(e => e.IJPString)
                 .HasColumnType("varchar")
-                .HasMaxLength(50);
+                .HasMaxLength(255);
 
             entity.Property(e => e.IJPDescription)
                 .HasColumnType("varchar")
-                .HasMaxLength(1000);
+                .HasMaxLength(512);
 
             entity.Property(e => e.IJPDescriptionEN)
                 .HasColumnType("varchar")
-                .HasMaxLength(1000);
+                .HasMaxLength(512);
 
             entity.Property(e => e.Color)
                 .HasColumnType("varchar")
@@ -136,6 +135,7 @@ namespace AirMap.Data
                 .HasMaxLength(50);
                 
             entity.HasKey(s => s.Id);
+            entity.Property(p => p.Id).ValueGeneratedOnAdd();
             //entity.Property(p => p.Id).ValueGeneratedOnAdd(); -- need value to be generated on add for LookO2 // not necessarily for SensorModel
             entity.HasIndex(s => s.Id).IsUnique(); //ensure Id is unique
             entity.HasIndex(s => s.Device).IsUnique(); //ensure Device is unique
