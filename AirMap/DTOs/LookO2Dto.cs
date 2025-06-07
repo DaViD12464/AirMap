@@ -26,17 +26,17 @@ namespace AirMap.DTOs
         /// <summary>
         /// PM1 (particulate matter higher than 1um) concentration as a string.
         /// </summary>
-        public string? PM1 { get; set; }
+        public string? Pm1 { get; set; }
 
         /// <summary>
         /// PM2.5 (particulate matter higher than 2.5µm) concentration as a string.
         /// </summary>
-        public string? PM25 { get; set; }
+        public string? Pm25 { get; set; }
 
         /// <summary>
         /// PM10 (particulate matter higher than 10µm) concentration as a string.
         /// </summary>
-        public string? PM10 { get; set; }
+        public string? Pm10 { get; set; }
 
         /// <summary>
         /// Unix epoch timestamp (in seconds) when the data was recorded.
@@ -56,27 +56,27 @@ namespace AirMap.DTOs
         /// <summary>
         /// Index of air quality pollution (IJP) as a stringified number.
         /// </summary>
-        public string? IJP { get; set; }
+        public string? Ijp { get; set; }
 
         /// <summary>
         /// Air quality level description in English (short format).
         /// </summary>
-        public string? IJPStringEN { get; set; }
+        public string? IjpStringEn { get; set; }
 
         /// <summary>
         /// Air quality level description (short format, localized).
         /// </summary>
-        public string? IJPString { get; set; }
+        public string? IjpString { get; set; }
 
         /// <summary>
         /// Air quality description in full detail (localized).
         /// </summary>
-        public string? IJPDescription { get; set; }
+        public string? IjpDescription { get; set; }
 
         /// <summary>
         /// Air quality description in full detail (English).
         /// </summary>
-        public string? IJPDescriptionEN { get; set; }
+        public string? IjpDescriptionEn { get; set; }
 
         /// <summary>
         /// Color code associated with the current IJP value.
@@ -96,17 +96,17 @@ namespace AirMap.DTOs
         /// <summary>
         /// Averaged PM1 value over a period of time as a string.
         /// </summary>
-        public string? AveragePM1 { get; set; }
+        public string? AveragePm1 { get; set; }
 
         /// <summary>
         /// Averaged PM2.5 value over a period of time as a string.
         /// </summary>
-        public string? AveragePM25 { get; set; }
+        public string? AveragePm25 { get; set; }
 
         /// <summary>
         /// Averaged PM10 value over a period of time as a string.
         /// </summary>
-        public string? AveragePM10 { get; set; }
+        public string? AveragePm10 { get; set; }
 
         /// <summary>
         /// Custom or user-defined name for the sensor.
@@ -121,17 +121,17 @@ namespace AirMap.DTOs
         /// <summary>
         /// Previously recorded IJP value.
         /// </summary>
-        public string? PreviousIJP { get; set; }
+        public string? PreviousIjp { get; set; }
 
         /// <summary>
         /// Formaldehyde (HCHO) concentration as a string.
         /// </summary>
-        public string? HCHO { get; set; }
+        public string? Hcho { get; set; }
 
         /// <summary>
         /// Averaged formaldehyde (HCHO) concentration as a string.
         /// </summary>
-        public string? AverageHCHO { get; set; }
+        public string? AverageHcho { get; set; }
 
         /// <summary>
         /// Human-readable location name assigned to the sensor.
