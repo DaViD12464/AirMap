@@ -13,7 +13,9 @@ namespace AirMap.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20250602110441_init")]
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
     partial class init
+#pragma warning restore CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
