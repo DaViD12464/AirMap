@@ -30,7 +30,6 @@ try
             builder.Configuration.GetConnectionString("DefaultConnection"),
             sqlServerOptions =>
             {
-                // przy pierwszej próbie po³¹czenia z baz¹ danych baza time-outuje - próba naprawienia poprzez retryonfailure
                 sqlServerOptions.EnableRetryOnFailure(
                     maxRetryCount: 10,
                     maxRetryDelay: TimeSpan.FromSeconds(30),
@@ -45,8 +44,8 @@ try
 
 
 // Test po³¹czenia z baz¹ danych
-    var ConStr = builder.Configuration.GetConnectionString("DefaultConnection");
-    if (string.IsNullOrEmpty(ConStr))
+    var conStr = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrEmpty(conStr))
     {
         throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
