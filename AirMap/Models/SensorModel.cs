@@ -21,17 +21,17 @@ namespace AirMap.Models
         /// <summary>
         /// PM1 (particulate matter higher than 1µm) concentration.
         /// </summary>
-        public float? PM1 { get; set; }
+        public float? Pm1 { get; set; }
 
         /// <summary>
         /// PM2.5 (particulate matter higher than 2.5µm) concentration.
         /// </summary>
-        public float? PM25 { get; set; }
+        public float? Pm25 { get; set; }
 
         /// <summary>
         /// PM10 (particulate matter higher than 10µm) concentration.
         /// </summary>
-        public float? PM10 { get; set; }
+        public float? Pm10 { get; set; }
 
         /// <summary>
         /// Timestamp of the data, parsed from the epoch time.
@@ -51,27 +51,27 @@ namespace AirMap.Models
         /// <summary>
         /// Integer air quality index.
         /// </summary>
-        public int? IJP { get; set; }
+        public int? Ijp { get; set; }
 
         /// <summary>
         /// Short description of air quality in English.
         /// </summary>
-        public string? IJPStringEN { get; set; }
+        public string? IjpStringEn { get; set; }
 
         /// <summary>
         /// Short description of air quality (localized).
         /// </summary>
-        public string? IJPString { get; set; }
+        public string? IjpString { get; set; }
 
         /// <summary>
         /// Detailed air quality description (localized).
         /// </summary>
-        public string? IJPDescription { get; set; }
+        public string? IjpDescription { get; set; }
 
         /// <summary>
         /// Detailed air quality description in English.
         /// </summary>
-        public string? IJPDescriptionEN { get; set; }
+        public string? IjpDescriptionEn { get; set; }
 
         /// <summary>
         /// Color code representing the air quality index.
@@ -91,17 +91,17 @@ namespace AirMap.Models
         /// <summary>
         /// Averaged PM1 value.
         /// </summary>
-        public float? AveragePM1 { get; set; }
+        public float? AveragePm1 { get; set; }
 
         /// <summary>
         /// Averaged PM2.5 value.
         /// </summary>
-        public float? AveragePM25 { get; set; }
+        public float? AveragePm25 { get; set; }
 
         /// <summary>
         /// Averaged PM10 value.
         /// </summary>
-        public float? AveragePM10 { get; set; }
+        public float? AveragePm10 { get; set; }
 
         /// <summary>
         /// Optional custom name for the sensor.
@@ -116,17 +116,17 @@ namespace AirMap.Models
         /// <summary>
         /// Previous IJP value.
         /// </summary>
-        public int? PreviousIJP { get; set; }
+        public int? PreviousIjp { get; set; }
 
         /// <summary>
         /// Formaldehyde (HCHO) concentration.
         /// </summary>
-        public float? HCHO { get; set; }
+        public float? Hcho { get; set; }
 
         /// <summary>
         /// Averaged formaldehyde (HCHO) concentration.
         /// </summary>
-        public float? AverageHCHO { get; set; }
+        public float? AverageHcho { get; set; }
 
         /// <summary>
         /// Human-readable location name for the sensor.
@@ -143,28 +143,28 @@ namespace AirMap.Models
             return new SensorModel
             {
                 Device = dto.Device,
-                PM1 = ParseFloat(dto.PM1),
-                PM25 = ParseFloat(dto.PM25),
-                PM10 = ParseFloat(dto.PM10),
+                Pm1 = ParseFloat(dto.Pm1),
+                Pm25 = ParseFloat(dto.Pm25),
+                Pm10 = ParseFloat(dto.Pm10),
                 Timestamp = ParseEpoch(dto.Epoch),
                 Latitude = ParseDouble(dto.Lat),
                 Longitude = ParseDouble(dto.Lon),
-                IJP = ParseInt(dto.IJP),
-                IJPStringEN = dto.IJPStringEN,
-                IJPString = dto.IJPString,
-                IJPDescription = dto.IJPDescription,
-                IJPDescriptionEN = dto.IJPDescriptionEN,
+                Ijp = ParseInt(dto.Ijp),
+                IjpStringEn = dto.IjpStringEn,
+                IjpString = dto.IjpString,
+                IjpDescription = dto.IjpDescription,
+                IjpDescriptionEn = dto.IjpDescriptionEn,
                 Color = dto.Color,
                 Temperature = ParseFloat(dto.Temperature),
                 Humidity = ParseFloat(dto.Humidity),
-                AveragePM1 = ParseFloat(dto.AveragePM1),
-                AveragePM25 = ParseFloat(dto.AveragePM25),
-                AveragePM10 = ParseFloat(dto.AveragePM10),
+                AveragePm1 = ParseFloat(dto.AveragePm1),
+                AveragePm25 = ParseFloat(dto.AveragePm25),
+                AveragePm10 = ParseFloat(dto.AveragePm10),
                 Name = dto.Name,
                 Indoor = ParseBool(dto.Indoor),
-                PreviousIJP = ParseInt(dto.PreviousIJP),
-                HCHO = ParseFloat(dto.HCHO),
-                AverageHCHO = ParseFloat(dto.AverageHCHO),
+                PreviousIjp = ParseInt(dto.PreviousIjp),
+                Hcho = ParseFloat(dto.Hcho),
+                AverageHcho = ParseFloat(dto.AverageHcho),
                 LocationName = dto.LocationName
             };
         }
@@ -202,31 +202,32 @@ namespace AirMap.Models
         {
             return new SensorModel
             {
-                Id = dto.id,
-                SamplingRate = ParseInt(dto.sampling_rate) ?? 0,
-                Timestamp = dto.timestamp,
+                Id = dto.Id,
+                SamplingRate = ParseInt(dto.SamplingRate) ?? 0,
+                Timestamp = dto.Timestamp,
                 Location = new Location
                 {
-                    Id = dto.location!.id,
-                    Latitude = dto.location!.latitude,
-                    Longitude = dto.location!.longitude,
-                    Altitude = dto.location!.altitude,
-                    Country = dto.location!.country,
-                    ExactLocation = ParseBool(dto.location.ExactLocation.ToString()),
-                    Indoor = ParseBool(dto.location.Indoor.ToString()),
+                    Id = dto.Location!.Id,
+                    Latitude = dto.Location!.Latitude,
+                    Longitude = dto.Location!.Longitude,
+                    Altitude = dto.Location!.Altitude,
+                    Country = dto.Location!.Country,
+                    ExactLocation = ParseBool(dto.Location.ExactLocation.ToString()),
+                    Indoor = ParseBool(dto.Location.Indoor.ToString()),
                 },
                 Sensor = new Sensor
                 {
-                    Id = dto.sensor!.id,
-                    Pin = ParseInt(dto.sensor.pin),
-                    SensorType = new SensorType()
+                    Id = dto.Sensor!.Id,
+                    Pin = ParseInt(dto.Sensor.Pin),
+                    SensorType = dto.Sensor.SensorType == null ? 
+                        new SensorType{ Id = null, Name = "n/a", Manufacturer = "n/a"} : new SensorType //allow null SensorType value as it is not required
                     {
-                        Id = dto.sensor.sensor_type!.id,
-                        Name = dto.sensor.sensor_type.name,
-                        Manufacturer = dto.sensor.sensor_type.manufacturer
+                        Id = dto.Sensor.SensorType!.Id,
+                        Name = dto.Sensor.SensorType.Name,
+                        Manufacturer = dto.Sensor.SensorType.Manufacturer
                     }
                 },
-                SensorDataValues = ParseSensorDataValuesList(dto.sensordatavalues!)
+                SensorDataValues = ParseSensorDataValuesList(dto.Sensordatavalues!)
                
 
             };
@@ -280,9 +281,9 @@ namespace AirMap.Models
             {
                 result.Add(new SensorDataValues
                 {
-                    Id = item.id,
-                    Value = ParseDouble(item.value?.ToString()),
-                    ValueType = item.value_type
+                    Id = item.Id,
+                    Value = ParseDouble(item.Value?.ToString()),
+                    ValueType = item.ValueType
                 });
             }
             return result;
@@ -348,7 +349,7 @@ namespace AirMap.Models
     {   /// <summary>
         /// Identity number of the sensor type.
         /// </summary>
-        public long Id { get; set; }
+        public long? Id { get; set; }
         /// <summary>
         /// Name of the sensor.
         /// </summary>
@@ -373,6 +374,6 @@ namespace AirMap.Models
         /// <summary>
         /// Type of the sensor data value, presented in string.
         /// </summary>
-        public string? ValueType { get; set; }
+        public required string ValueType { get; set; }
     }
 }
