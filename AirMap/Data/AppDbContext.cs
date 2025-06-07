@@ -57,13 +57,13 @@ namespace AirMap.Data
                 .HasColumnType("varchar")
                 .HasMaxLength(50);
 
-            entity.Property(e => e.PM1)
+            entity.Property(e => e.Pm1)
                 .HasColumnType("decimal(18, 2)");
 
-            entity.Property(e => e.PM25)
+            entity.Property(e => e.Pm25)
                 .HasColumnType("decimal(18, 2)");
 
-            entity.Property(e => e.PM10)
+            entity.Property(e => e.Pm10)
                 .HasColumnType("decimal(18, 2)");
 
             entity.Property(e => e.Timestamp)
@@ -75,22 +75,22 @@ namespace AirMap.Data
             entity.Property(e => e.Longitude)
                 .HasColumnType("decimal(18, 8)");
 
-            entity.Property(e => e.IJP)
+            entity.Property(e => e.Ijp)
                 .HasColumnType("decimal(18, 8)");
 
-            entity.Property(e => e.IJPStringEN)
+            entity.Property(e => e.IjpStringEn)
                 .HasColumnType("varchar")
                 .HasMaxLength(255);
 
-            entity.Property(e => e.IJPString)
+            entity.Property(e => e.IjpString)
                 .HasColumnType("varchar")
                 .HasMaxLength(255);
 
-            entity.Property(e => e.IJPDescription)
+            entity.Property(e => e.IjpDescription)
                 .HasColumnType("varchar")
                 .HasMaxLength(512);
 
-            entity.Property(e => e.IJPDescriptionEN)
+            entity.Property(e => e.IjpDescriptionEn)
                 .HasColumnType("varchar")
                 .HasMaxLength(512);
 
@@ -104,13 +104,13 @@ namespace AirMap.Data
             entity.Property(e => e.Humidity)
                 .HasColumnType("decimal(18, 2)");
 
-            entity.Property(e => e.AveragePM1)
+            entity.Property(e => e.AveragePm1)
                 .HasColumnType("decimal(18, 2)");
 
-            entity.Property(e => e.AveragePM25)
+            entity.Property(e => e.AveragePm25)
                 .HasColumnType("decimal(18, 2)");
 
-            entity.Property(e => e.AveragePM10)
+            entity.Property(e => e.AveragePm10)
                 .HasColumnType("decimal(18, 2)");
 
             entity.Property(e => e.Name)
@@ -120,14 +120,14 @@ namespace AirMap.Data
             entity.Property(e=> e.Indoor)
                 .HasColumnType("bit");
 
-            entity.Property(e => e.PreviousIJP)
+            entity.Property(e => e.PreviousIjp)
                 .HasColumnType("varchar")
                 .HasMaxLength(50);
 
-            entity.Property(e => e.HCHO)
+            entity.Property(e => e.Hcho)
                 .HasColumnType("decimal(18, 2)");
 
-            entity.Property(e => e.AverageHCHO)
+            entity.Property(e => e.AverageHcho)
                 .HasColumnType("decimal(18, 2)");
 
             entity.Property(e => e.LocationName)

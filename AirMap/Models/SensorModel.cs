@@ -220,7 +220,7 @@ namespace AirMap.Models
                     Id = dto.Sensor!.Id,
                     Pin = ParseInt(dto.Sensor.Pin),
                     SensorType = dto.Sensor.SensorType == null ? 
-                        new SensorType{ Id = null, Name = "n/a", Manufacturer = "n/a"} : new SensorType //allow null SensorType value as it is not required
+                        new SensorType{ Name = "n/a", Manufacturer = "n/a"} : new SensorType //allow null SensorType value as it is not required
                     {
                         Id = dto.Sensor.SensorType!.Id,
                         Name = dto.Sensor.SensorType.Name,
@@ -279,15 +279,26 @@ namespace AirMap.Models
             var result = new List<SensorDataValues>();
             foreach (var item in sdv)
             {
+                double parsedValue;
+                bool valid = double.TryParse(item.Value?.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out parsedValue);
+
+                // SQL Server doesn't support NaN or Infinity
+                if (!valid || double.IsNaN(parsedValue) || double.IsInfinity(parsedValue))
+                {
+                    parsedValue = 0.0;
+                }
+
                 result.Add(new SensorDataValues
                 {
                     Id = item.Id,
-                    Value = ParseDouble(item.Value?.ToString()),
-                    ValueType = item.ValueType
+                    Value = parsedValue,
+                    ValueType = item.ValueType ?? "n/a"
                 });
             }
+
             return result;
         }
+
     }
 
     /// <summary>
