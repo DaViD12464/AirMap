@@ -203,7 +203,7 @@ namespace AirMap.Models
             return new SensorModel
             {
                 Id = dto.Id,
-                SamplingRate = ParseInt(dto.SamplingRate) ?? 0,
+                SamplingRate = ParseInt(dto.Sampling_Rate) ?? 0,
                 Timestamp = dto.Timestamp,
                 Location = new Location
                 {
@@ -212,19 +212,19 @@ namespace AirMap.Models
                     Longitude = dto.Location!.Longitude,
                     Altitude = dto.Location!.Altitude,
                     Country = dto.Location!.Country,
-                    ExactLocation = ParseBool(dto.Location.ExactLocation.ToString()),
+                    ExactLocation = ParseBool(dto.Location.Exact_Location.ToString()),
                     Indoor = ParseBool(dto.Location.Indoor.ToString()),
                 },
                 Sensor = new Sensor
                 {
                     Id = dto.Sensor!.Id,
                     Pin = ParseInt(dto.Sensor.Pin),
-                    SensorType = dto.Sensor.SensorType == null ? 
+                    SensorType = dto.Sensor.Sensor_Type == null ? 
                         new SensorType{ Name = "n/a", Manufacturer = "n/a"} : new SensorType //allow null SensorType value as it is not required
                     {
-                        Id = dto.Sensor.SensorType!.Id,
-                        Name = dto.Sensor.SensorType.Name,
-                        Manufacturer = dto.Sensor.SensorType.Manufacturer
+                        Id = dto.Sensor.Sensor_Type!.Id,
+                        Name = dto.Sensor.Sensor_Type.Name,
+                        Manufacturer = dto.Sensor.Sensor_Type.Manufacturer
                     }
                 },
                 SensorDataValues = ParseSensorDataValuesList(dto.Sensordatavalues!)
@@ -292,7 +292,7 @@ namespace AirMap.Models
                 {
                     Id = item.Id,
                     Value = parsedValue,
-                    ValueType = item.ValueType ?? "n/a"
+                    ValueType = item.Value_Type ?? "n/a"
                 });
             }
 

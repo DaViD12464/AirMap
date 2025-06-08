@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
+// ReSharper disable All
 
 namespace AirMap.DTOs
 { /// <summary>
@@ -19,7 +20,7 @@ namespace AirMap.DTOs
         /// <summary>
         /// Sampling_rate of the sensor data.
         /// </summary>
-        public string? SamplingRate { get; set; }
+        public string? Sampling_Rate { get; set; }
         /// <summary>
         /// Timestamp of the data, parsed from the epoch time.
         /// </summary>
@@ -68,7 +69,7 @@ namespace AirMap.DTOs
         /// <summary>
         /// Exact_location status of the sensor's location. Indicates if the location is exact or approximate.
         /// </summary>
-        public int? ExactLocation { get; set; } // currently comes as 1 or 0 in Int - preferably Boolean value
+        public int? Exact_Location { get; set; } // currently comes as 1 or 0 in Int - preferably Boolean value
         /// <summary>
         /// Indoor status of the sensor's location. Indicates if the sensor is located indoors or outdoors.
         /// </summary>
@@ -93,7 +94,7 @@ namespace AirMap.DTOs
         /// <summary>
         /// Declaration of the sensor type.
         /// </summary>
-        public SensorType? SensorType { get; set; }
+        public SensorType? Sensor_Type { get; set; }
     }
 
     ///<summary>
@@ -131,10 +132,10 @@ namespace AirMap.DTOs
         /// <summary>
         /// Value read by sensor.
         /// </summary>
-        public string? VALUE { get; set; }
+        public string? Value { get; set; }
         /// <summary>
         /// Type of the value read by sensor.
         /// </summary>
-        public required string ValueType { get; set; }
+        public required string Value_Type { get; set; }
     }
 }
