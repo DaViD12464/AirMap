@@ -34,24 +34,18 @@ namespace AirMap.Data
                 .HasOne(l => l.Location)
                 .WithMany().HasForeignKey(l => l.LocationId);
 
-            entity.OwnsOne(s => s.Sensor, sa =>
-            {
-                sa.WithOwner();
-                sa.HasOne(s => s.SensorType);
-                sa.Navigation(s=> s.SensorType).IsRequired(false);
-            });
-            entity.Navigation(e => e.Sensor).IsRequired(false);
-                
+            entity.HasOne(s => s.Sensor).WithMany().HasForeignKey(s => s.SensorId);
+            entity.Property(x => x.SensorId)
+                .ValueGeneratedNever();
 
-            modelBuilder.Entity<SensorModel>(st =>
-            {
-                st.HasOne<SensorType>()
-                    .WithMany()
-                    .HasForeignKey("SensorTypeId");
-            });
+            entity.HasMany(s => s.SensorDataValues)
+                .WithOne()
+                .HasForeignKey("SensorModelId")
+                .OnDelete(DeleteBehavior.Cascade);
 
-            entity.OwnsMany(sdv => sdv.SensorDataValues)
-                .WithOwner().HasForeignKey("SensorDataValuesId");
+            entity.HasIndex(e => e.SourceApiId).IsUnique();
+
+
 
             entity.Property(e => e.Device)
                 .HasColumnType("varchar")
