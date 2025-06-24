@@ -48,9 +48,64 @@ namespace AirMap.Migrations
                     b.Property<double?>("Longitude")
                         .HasColumnType("float");
 
+                    b.Property<long?>("SourceApiId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.ToTable("Location");
+                });
+
+            modelBuilder.Entity("AirMap.Models.Sensor", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int?>("Pin")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("SensorTypeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SourceApiId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SensorTypeId");
+
+                    b.ToTable("Sensor");
+                });
+
+            modelBuilder.Entity("AirMap.Models.SensorDataValues", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("SensorModelId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SourceApiId")
+                        .HasColumnType("bigint");
+
+                    b.Property<double?>("Value")
+                        .HasColumnType("float");
+
+                    b.Property<string>("ValueType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SensorModelId");
+
+                    b.ToTable("SensorDataValues");
                 });
 
             modelBuilder.Entity("AirMap.Models.SensorModel", b =>
@@ -61,16 +116,16 @@ namespace AirMap.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<decimal?>("AverageHCHO")
+                    b.Property<decimal?>("AverageHcho")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<decimal?>("AveragePM1")
+                    b.Property<decimal?>("AveragePm1")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<decimal?>("AveragePM10")
+                    b.Property<decimal?>("AveragePm10")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<decimal?>("AveragePM25")
+                    b.Property<decimal?>("AveragePm25")
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<string>("Color")
@@ -81,28 +136,28 @@ namespace AirMap.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar");
 
-                    b.Property<decimal?>("HCHO")
+                    b.Property<decimal?>("Hcho")
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<decimal?>("Humidity")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<decimal?>("IJP")
+                    b.Property<decimal?>("Ijp")
                         .HasColumnType("decimal(18, 8)");
 
-                    b.Property<string>("IJPDescription")
+                    b.Property<string>("IjpDescription")
                         .HasMaxLength(512)
                         .HasColumnType("varchar");
 
-                    b.Property<string>("IJPDescriptionEN")
+                    b.Property<string>("IjpDescriptionEn")
                         .HasMaxLength(512)
                         .HasColumnType("varchar");
 
-                    b.Property<string>("IJPString")
+                    b.Property<string>("IjpString")
                         .HasMaxLength(255)
                         .HasColumnType("varchar");
 
-                    b.Property<string>("IJPStringEN")
+                    b.Property<string>("IjpStringEn")
                         .HasMaxLength(255)
                         .HasColumnType("varchar");
 
@@ -126,23 +181,30 @@ namespace AirMap.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar");
 
-                    b.Property<decimal?>("PM1")
+                    b.Property<decimal?>("Pm1")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<decimal?>("PM10")
+                    b.Property<decimal?>("Pm10")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<decimal?>("PM25")
+                    b.Property<decimal?>("Pm25")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<string>("PreviousIJP")
+                    b.Property<string>("PreviousIjp")
                         .HasMaxLength(50)
                         .HasColumnType("varchar");
 
                     b.Property<decimal?>("SamplingRate")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<long?>("SensorTypeId")
+                    b.PrimitiveCollection<string>("SensorDataValuesIds")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("SensorId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SourceApiId")
                         .HasColumnType("bigint");
 
                     b.Property<decimal?>("Temperature")
@@ -162,7 +224,11 @@ namespace AirMap.Migrations
 
                     b.HasIndex("LocationId");
 
-                    b.HasIndex("SensorTypeId");
+                    b.HasIndex("SensorId");
+
+                    b.HasIndex("SourceApiId")
+                        .IsUnique()
+                        .HasFilter("[SourceApiId] IS NOT NULL");
 
                     b.ToTable("SensorModel", (string)null);
                 });
@@ -181,9 +247,29 @@ namespace AirMap.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long?>("SourceApiId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.ToTable("SensorType");
+                });
+
+            modelBuilder.Entity("AirMap.Models.Sensor", b =>
+                {
+                    b.HasOne("AirMap.Models.SensorType", "SensorType")
+                        .WithMany()
+                        .HasForeignKey("SensorTypeId");
+
+                    b.Navigation("SensorType");
+                });
+
+            modelBuilder.Entity("AirMap.Models.SensorDataValues", b =>
+                {
+                    b.HasOne("AirMap.Models.SensorModel", null)
+                        .WithMany("SensorDataValues")
+                        .HasForeignKey("SensorModelId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("AirMap.Models.SensorModel", b =>
@@ -192,69 +278,17 @@ namespace AirMap.Migrations
                         .WithMany()
                         .HasForeignKey("LocationId");
 
-                    b.HasOne("AirMap.Models.SensorType", null)
+                    b.HasOne("AirMap.Models.Sensor", "Sensor")
                         .WithMany()
-                        .HasForeignKey("SensorTypeId");
-
-                    b.OwnsMany("AirMap.Models.SensorDataValues", "SensorDataValues", b1 =>
-                        {
-                            b1.Property<long>("SensorDataValuesId")
-                                .HasColumnType("bigint");
-
-                            b1.Property<long>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("bigint");
-
-                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<long>("Id"));
-
-                            b1.Property<double?>("Value")
-                                .HasColumnType("float");
-
-                            b1.Property<string>("ValueType")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("SensorDataValuesId", "Id");
-
-                            b1.ToTable("SensorDataValues");
-
-                            b1.WithOwner()
-                                .HasForeignKey("SensorDataValuesId");
-                        });
-
-                    b.OwnsOne("AirMap.Models.Sensor", "Sensor", b1 =>
-                        {
-                            b1.Property<long>("SensorModelId")
-                                .HasColumnType("bigint");
-
-                            b1.Property<long>("Id")
-                                .HasColumnType("bigint");
-
-                            b1.Property<int?>("Pin")
-                                .HasColumnType("int");
-
-                            b1.Property<long?>("SensorTypeId")
-                                .HasColumnType("bigint");
-
-                            b1.HasKey("SensorModelId");
-
-                            b1.HasIndex("SensorTypeId");
-
-                            b1.ToTable("Sensor");
-
-                            b1.WithOwner()
-                                .HasForeignKey("SensorModelId");
-
-                            b1.HasOne("AirMap.Models.SensorType", "SensorType")
-                                .WithMany()
-                                .HasForeignKey("SensorTypeId");
-
-                            b1.Navigation("SensorType");
-                        });
+                        .HasForeignKey("SensorId");
 
                     b.Navigation("Location");
 
                     b.Navigation("Sensor");
+                });
 
+            modelBuilder.Entity("AirMap.Models.SensorModel", b =>
+                {
                     b.Navigation("SensorDataValues");
                 });
 #pragma warning restore 612, 618

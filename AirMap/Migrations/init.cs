@@ -6,9 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AirMap.Migrations
 {
     /// <inheritdoc />
-#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
-    public partial class init : Migration
-#pragma warning restore CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,6 +17,7 @@ namespace AirMap.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    SourceApiId = table.Column<long>(type: "bigint", nullable: true),
                     Latitude = table.Column<double>(type: "float", nullable: true),
                     Longitude = table.Column<double>(type: "float", nullable: true),
                     Altitude = table.Column<double>(type: "float", nullable: true),
@@ -37,6 +36,7 @@ namespace AirMap.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    SourceApiId = table.Column<long>(type: "bigint", nullable: true),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Manufacturer = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -46,38 +46,60 @@ namespace AirMap.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Sensor",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SourceApiId = table.Column<long>(type: "bigint", nullable: true),
+                    Pin = table.Column<int>(type: "int", nullable: true),
+                    SensorTypeId = table.Column<long>(type: "bigint", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sensor", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Sensor_SensorType_SensorTypeId",
+                        column: x => x.SensorTypeId,
+                        principalTable: "SensorType",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SensorModel",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    SourceApiId = table.Column<long>(type: "bigint", nullable: true),
                     Device = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true),
-                    PM1 = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    PM25 = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    PM10 = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    Pm1 = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    Pm25 = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    Pm10 = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     Timestamp = table.Column<DateTime>(type: "datetime", nullable: true),
                     Latitude = table.Column<decimal>(type: "decimal(18,8)", nullable: true),
                     Longitude = table.Column<decimal>(type: "decimal(18,8)", nullable: true),
-                    IJP = table.Column<decimal>(type: "decimal(18,8)", nullable: true),
-                    IJPStringEN = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true),
-                    IJPString = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true),
-                    IJPDescription = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: true),
-                    IJPDescriptionEN = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: true),
+                    Ijp = table.Column<decimal>(type: "decimal(18,8)", nullable: true),
+                    IjpStringEn = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: true),
+                    IjpString = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: true),
+                    IjpDescription = table.Column<string>(type: "varchar(512)", maxLength: 512, nullable: true),
+                    IjpDescriptionEn = table.Column<string>(type: "varchar(512)", maxLength: 512, nullable: true),
                     Color = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: true),
                     Temperature = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     Humidity = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    AveragePM1 = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    AveragePM25 = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    AveragePM10 = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    AveragePm1 = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    AveragePm25 = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    AveragePm10 = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     Name = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: true),
                     Indoor = table.Column<bool>(type: "bit", nullable: true),
-                    PreviousIJP = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true),
-                    HCHO = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    AverageHCHO = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    PreviousIjp = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true),
+                    Hcho = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    AverageHcho = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     LocationName = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true),
-                    SamplingRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    SamplingRate = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     LocationId = table.Column<long>(type: "bigint", nullable: true),
-                    SensorTypeId = table.Column<long>(type: "bigint", nullable: true)
+                    SensorId = table.Column<long>(type: "bigint", nullable: true),
+                    SensorDataValuesIds = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -88,36 +110,10 @@ namespace AirMap.Migrations
                         principalTable: "Location",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_SensorModel_SensorType_SensorTypeId",
-                        column: x => x.SensorTypeId,
-                        principalTable: "SensorType",
+                        name: "FK_SensorModel_Sensor_SensorId",
+                        column: x => x.SensorId,
+                        principalTable: "Sensor",
                         principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Sensor",
-                columns: table => new
-                {
-                    SensorModelId = table.Column<long>(type: "bigint", nullable: false),
-                    Id = table.Column<long>(type: "bigint", nullable: true),
-                    Pin = table.Column<int>(type: "int", nullable: true),
-                    SensorTypeId = table.Column<long>(type: "bigint", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Sensor", x => x.SensorModelId);
-                    table.ForeignKey(
-                        name: "FK_Sensor_SensorModel_SensorModelId",
-                        column: x => x.SensorModelId,
-                        principalTable: "SensorModel",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Sensor_SensorType_SensorTypeId",
-                        column: x => x.SensorTypeId,
-                        principalTable: "SensorType",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -126,16 +122,17 @@ namespace AirMap.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    SensorDataValuesId = table.Column<long>(type: "bigint", nullable: false),
+                    SourceApiId = table.Column<long>(type: "bigint", nullable: true),
                     Value = table.Column<double>(type: "float", nullable: true),
-                    ValueType = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    ValueType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SensorModelId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SensorDataValues", x => new { x.SensorDataValuesId, x.Id });
+                    table.PrimaryKey("PK_SensorDataValues", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SensorDataValues_SensorModel_SensorDataValuesId",
-                        column: x => x.SensorDataValuesId,
+                        name: "FK_SensorDataValues_SensorModel_SensorModelId",
+                        column: x => x.SensorModelId,
                         principalTable: "SensorModel",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -145,6 +142,11 @@ namespace AirMap.Migrations
                 name: "IX_Sensor_SensorTypeId",
                 table: "Sensor",
                 column: "SensorTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SensorDataValues_SensorModelId",
+                table: "SensorDataValues",
+                column: "SensorModelId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SensorModel_Device",
@@ -165,17 +167,21 @@ namespace AirMap.Migrations
                 column: "LocationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SensorModel_SensorTypeId",
+                name: "IX_SensorModel_SensorId",
                 table: "SensorModel",
-                column: "SensorTypeId");
+                column: "SensorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SensorModel_SourceApiId",
+                table: "SensorModel",
+                column: "SourceApiId",
+                unique: true,
+                filter: "[SourceApiId] IS NOT NULL");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Sensor");
-
             migrationBuilder.DropTable(
                 name: "SensorDataValues");
 
@@ -184,6 +190,9 @@ namespace AirMap.Migrations
 
             migrationBuilder.DropTable(
                 name: "Location");
+
+            migrationBuilder.DropTable(
+                name: "Sensor");
 
             migrationBuilder.DropTable(
                 name: "SensorType");
