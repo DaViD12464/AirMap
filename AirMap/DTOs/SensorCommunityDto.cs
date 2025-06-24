@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
-// ReSharper disable All
 
 namespace AirMap.DTOs
 { /// <summary>
@@ -13,9 +12,6 @@ namespace AirMap.DTOs
         /// <summary>
         /// Identifier of the sensor device.
         /// </summary>
-        [JsonIgnore]
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public long Id { get; set; }
         /// <summary>
         /// Sampling_rate of the sensor data.
@@ -47,8 +43,6 @@ namespace AirMap.DTOs
         /// <summary>
         /// Identifier of the location.
         /// </summary>
-        [JsonIgnore]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public long Id { get; set; }
         /// <summary>
         /// Latitude of the sensor's location.
@@ -84,8 +78,6 @@ namespace AirMap.DTOs
         /// <summary>
         /// Identifier of the sensor.
         /// </summary>
-        [JsonIgnore]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public long Id { get; set; }
         /// <summary>
         /// Identifies the pin user by the sensor.
@@ -105,8 +97,6 @@ namespace AirMap.DTOs
         /// <summary>
         /// Identifier of the sensor type.
         /// </summary>
-        [JsonIgnore]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public long Id { get; set; }
         /// <summary>
         /// Name of the sensor type. (String declaration of sensor type)
@@ -126,8 +116,6 @@ namespace AirMap.DTOs
         /// <summary>
         /// Identifier of the exact sensor data value.
         /// </summary>
-        [JsonIgnore]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public long Id { get; set; }
         /// <summary>
         /// Value read by sensor.
