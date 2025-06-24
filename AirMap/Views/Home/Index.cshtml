@@ -3,6 +3,7 @@
 }
 @using AirMap.Data
 @using AirMap.Helper
+@using AirMap.Helpers
 @inject AppDbContext DbContext
 
 
@@ -11,11 +12,19 @@
 <html>
 <head>
     <title class="text-center">@ViewData["Title"]</title>
-    <!-- Leaflet data -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Leaflet core -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+	<!-- Leaflet Routing -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+	
+	<!-- MarkerCluster plugin --> 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.default.css" />
+
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 </head>
 <body>
 
@@ -29,8 +38,17 @@
 </html>
 
 @{
-    var allSensors = await DatabaseHelper.GetAllAsync<SensorModel>(DbContext);
+	var allSensors = await DatabaseHelper.GetAllAsync<SensorModel>(DbContext);
+	allSensors = await DatabaseHelper.GetMissingData<SensorModel, Location>(allSensors, DbContext);
+	allSensors = await DatabaseHelper.GetMissingData<SensorModel, Sensor>(allSensors, DbContext);
+	allSensors = await DatabaseHelper.GetMissingDataFromList<SensorModel, SensorDataValues>(allSensors, DbContext);
+	
+    var serializedSensorData = Json.Serialize(allSensors); // To resolve TS1109
 }
+
+<script id="sensorData" type="application/json">
+    @Html.Raw(Json.Serialize(allSensors))
+</script>
 
 <!-- Map Initialization Script -->
 <script>
@@ -43,43 +61,97 @@
         }).addTo(map);
 
 
-
         // --- Sensor pins ---
-        const sensorData = @Html.Raw(Json.Serialize(allSensors));
+        const sensorData = JSON.parse(document.getElementById('sensorData').textContent);
 
-        const Icon = @{
-        if (false)
+    const greenDefaultIcon = L.icon({
+        //iconAlternativeUrl: '/AirQualityMarkers/defaults/green-dot.png',   // '/AirQualityMarkers/defaults/green-dot.png'
+        iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/green-dot.png', //-- add backup in case of fail of loading local folder
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+    });
+
+    const blueDefaultIcon = L.icon({
+        //iconAlternativeUrl: '/AirQualityMarkers/defaults/blue-dot.png',  // '/AirQualityMarkers/defaults/blue-dot.png'
+        iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png', //-- add backup in case of fail of loading local folder
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+    });
+
+    const veryGoodAirQualityIcon = L.icon({
+        iconUrl: '/AirQualityMarkers/VeryGoodAQ.png',
+        iconSize: [64, 64],
+        iconAnchor: [32, 64],
+        popupAnchor: [0, -48]
+    });
+
+    const goodAirQualityIcon = L.icon({
+        iconUrl: '/AirQualityMarkers/GoodAQ.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+    });
+    
+    const moderateAirQualityIcon = L.icon({
+        iconUrl: '/AirQualityMarkers/ModerateAQ.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+    });
+
+    const sufficientAirQualityIcon = L.icon({
+        iconUrl: '/AirQualityMarkers/SufficientAQ.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+    });
+
+    const badAirQualityIcon = L.icon({
+        iconUrl: '/AirQualityMarkers/BadAQ.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+    });
+
+    const veryBadAirQualityIcon = L.icon({
+        iconUrl: '/AirQualityMarkers/VeryBadAQ.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+    });
+
+            const markers = L.markerClusterGroup();
+
+            sensorData.forEach(sensor => {
+                let latLng = null;
+                let icon = null;
+                let popupText = "";
+
+        if (sensor.latitude != null && sensor.longitude != null) 
         {
-            <text>
-                            L.icon({
-                                iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/red-dot.png',
-                                iconSize: [32, 32],
-                                iconAnchor: [16, 32],
-                                popupAnchor: [0, -32]
-                            });
-            </text>
+            latLng = L.latLng(sensor.latitude, sensor.longitude);
+            icon = greenDefaultIcon || greenDefaultIcon;
+            popupText = sensor.name || "Sensor LookO2";
+        } 
+        else if (sensor.location && sensor.location.latitude != null && sensor.location.longitude != null) //(sensor.location && sensor.location.latitude != null && sensor.location.longitude != null)
+        { 
+            latLng = L.latLng(sensor.location.latitude, sensor.location.longitude);
+            icon = blueDefaultIcon || blueDefaultIcon;
+            popupText = sensor.name || "SensorSC";
         }
-        else
-        {
-            <text>
-                                    L.icon({
-                                        iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/green-dot.png',
-                                        iconSize: [32, 32],
-                                        iconAnchor: [16, 32],
-                                        popupAnchor: [0, -32]
-                                });
-            </text>
+
+        if (latLng) {
+            const marker = L.marker(latLng, {icon: icon}).bindPopup(popupText);
+            markers.addLayer(marker);
         }
-    }
+    });
+
+    // Add cluster group to the map
+	map.addLayer(markers);
 
 
-        sensorData.forEach(sensor => {
-            if (sensor.latitude && sensor.longitude) {
-                const latLng = L.latLng(sensor.latitude, sensor.longitude);
-                L.marker(latLng, { icon: Icon }).addTo(map)
-                    .bindPopup(sensor.name || "Sensor");
-            }
-        });
 
         let userLatLng = null;
         let routingControl = null;
@@ -90,8 +162,7 @@
                 userLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
 
                 L.marker(userLatLng).addTo(map)
-                    .bindPopup("Twoja aktualna lokalizacja")
-                    .openPopup();
+                    .bindPopup("Twoja aktualna lokalizacja");
 
                 map.setView(userLatLng, 10);
             }, function (error) {
@@ -100,7 +171,7 @@
         } else {
             alert("Geolokalizacja nie jest obsługiwana przez Twoją przeglądarkę.");
         }
-
+        //Usage of "ContextMenu (RMB)" to create a waypoint
         map.on('contextmenu', function (e) {
             if (!userLatLng) {
                 alert("Lokalizacja użytkownika nie jest jeszcze dostępna.");
