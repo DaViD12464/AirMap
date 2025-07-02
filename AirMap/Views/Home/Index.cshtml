@@ -47,7 +47,12 @@
 }
 
 <script id="sensorData" type="application/json">
-    @Html.Raw(Json.Serialize(allSensors))
+    @Html.Raw(serializedSensorData)
+</script>
+
+<script id="iconData" type="">
+
+
 </script>
 
 <!-- Map Initialization Script -->
@@ -122,6 +127,31 @@
         popupAnchor: [0, -32]
     });
 
+
+    function getSensorDescription(sensor) {
+        if (sensor && sensor.sensorDataValues != null){
+            fetch('/api/sensor/GetIconData', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(sensor)
+        })
+        .then(response => response.text())
+        .then(data => {
+            console.log("Sensor description from C#:", data);
+        })
+        .catch(error => {
+            console.error("Error calling C# method:", error);
+        });
+        }
+        else
+        console.log("Other data (looko2)");
+    };
+    
+
+
+
             const markers = L.markerClusterGroup();
 
             sensorData.forEach(sensor => {
@@ -132,13 +162,13 @@
         if (sensor.latitude != null && sensor.longitude != null) 
         {
             latLng = L.latLng(sensor.latitude, sensor.longitude);
-            icon = greenDefaultIcon || greenDefaultIcon;
+            icon = getSensorDescription(sensor) ?? greenDefaultIcon;
             popupText = sensor.name || "Sensor LookO2";
         } 
         else if (sensor.location && sensor.location.latitude != null && sensor.location.longitude != null) //(sensor.location && sensor.location.latitude != null && sensor.location.longitude != null)
         { 
             latLng = L.latLng(sensor.location.latitude, sensor.location.longitude);
-            icon = blueDefaultIcon || blueDefaultIcon;
+            icon = getSensorDescription(sensor) ?? blueDefaultIcon;
             popupText = sensor.name || "SensorSC";
         }
 
