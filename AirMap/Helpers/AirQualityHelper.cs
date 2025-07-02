@@ -1,12 +1,25 @@
 ﻿using AirMap.Models;
+using Microsoft.JSInterop;
 
 namespace AirMap.Helpers
 {
-    public class AirQualityHelper
+    public static class AirQualityHelper
     {
-        public string IconHelper(Sensor sensor)
+        [JSInvokable("IconHelper")]
+        public static string? IconHelper(SensorModel sensor)
         {
-            return "";
+            try
+            {
+                if (sensor.SensorDataValues != null)
+                    return "veryGoodAirQualityIcon";
+                else
+                    return "badAirQualityIcon";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception in AQ_Helper: {ex.Message}");
+                return null;
+            }
         }
     }
 }
