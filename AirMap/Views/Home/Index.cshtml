@@ -50,14 +50,10 @@
     @Html.Raw(serializedSensorData)
 </script>
 
-<script id="iconData" type="">
-
-
-</script>
 
 <!-- Map Initialization Script -->
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", async function () {
         var map = L.map('map').setView([52.1143385, 19.4236714], 7);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -65,123 +61,55 @@
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
-
-        // --- Sensor pins ---
         const sensorData = JSON.parse(document.getElementById('sensorData').textContent);
 
-    const greenDefaultIcon = L.icon({
-        //iconAlternativeUrl: '/AirQualityMarkers/defaults/green-dot.png',   // '/AirQualityMarkers/defaults/green-dot.png'
-        iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/green-dot.png', //-- add backup in case of fail of loading local folder
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32]
-    });
+        const icons = {
+            veryGoodAirQualityIcon: L.icon({ iconUrl: '/AirQualityMarkers/VeryGoodAQ.png', iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [0, -48] }),
+            goodAirQualityIcon:      L.icon({ iconUrl: '/AirQualityMarkers/GoodAQ.png',     iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+            moderateAirQualityIcon:  L.icon({ iconUrl: '/AirQualityMarkers/ModerateAQ.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+            sufficientAirQualityIcon:L.icon({ iconUrl: '/AirQualityMarkers/SufficientAQ.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+            badAirQualityIcon:       L.icon({ iconUrl: '/AirQualityMarkers/BadAQ.png',      iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+            veryBadAirQualityIcon:   L.icon({ iconUrl: '/AirQualityMarkers/VeryBadAQ.png',  iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+            defaultGreen:            L.icon({ iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/green-dot.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+            defaultBlue:             L.icon({ iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+        };
 
-    const blueDefaultIcon = L.icon({
-        //iconAlternativeUrl: '/AirQualityMarkers/defaults/blue-dot.png',  // '/AirQualityMarkers/defaults/blue-dot.png'
-        iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png', //-- add backup in case of fail of loading local folder
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32]
-    });
+        let iconNames = [];
+        try {
+            const response = await fetch('/api/sensor/GetIconDataBatch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(sensorData)
+            });
+            
+            if (!response.ok) throw new Error("Failed to fetch icon data");
+            iconNames = await response.json();
+        } catch (error) {
+            console.error("Error getting icon names:", error);
+        }
 
-    const veryGoodAirQualityIcon = L.icon({
-        iconUrl: '/AirQualityMarkers/VeryGoodAQ.png',
-        iconSize: [64, 64],
-        iconAnchor: [32, 64],
-        popupAnchor: [0, -48]
-    });
+        const markers = L.markerClusterGroup();
 
-    const goodAirQualityIcon = L.icon({
-        iconUrl: '/AirQualityMarkers/GoodAQ.png',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32]
-    });
-    
-    const moderateAirQualityIcon = L.icon({
-        iconUrl: '/AirQualityMarkers/ModerateAQ.png',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32]
-    });
+        sensorData.forEach((sensor, index) => {
+            let latLng = null;
+            let popupText = sensor.name || "Sensor";
+            const iconName = iconNames[index].icon;
+            let icon = icons[iconName.toString()] || icons["defaultGreen"];
 
-    const sufficientAirQualityIcon = L.icon({
-        iconUrl: '/AirQualityMarkers/SufficientAQ.png',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32]
-    });
+            if (sensor.latitude != null && sensor.longitude != null) {
+                latLng = L.latLng(sensor.latitude, sensor.longitude);
+            } else if (sensor.location?.latitude != null && sensor.location?.longitude != null) {
+                latLng = L.latLng(sensor.location.latitude, sensor.location.longitude);
+                icon = icons[iconName.toString()] || icons["defaultBlue"];
+            }
 
-    const badAirQualityIcon = L.icon({
-        iconUrl: '/AirQualityMarkers/BadAQ.png',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32]
-    });
-
-    const veryBadAirQualityIcon = L.icon({
-        iconUrl: '/AirQualityMarkers/VeryBadAQ.png',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32]
-    });
-
-
-    function getSensorDescription(sensor) {
-        if (sensor && sensor.sensorDataValues != null){
-            fetch('/api/sensor/GetIconData', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(sensor)
-        })
-        .then(response => response.text())
-        .then(data => {
-            console.log("Sensor description from C#:", data);
-        })
-        .catch(error => {
-            console.error("Error calling C# method:", error);
+            if (latLng) {
+                const marker = L.marker(latLng, { icon }).bindPopup(popupText);
+                markers.addLayer(marker);
+            }
         });
-        }
-        else
-        console.log("Other data (looko2)");
-    };
-    
 
-
-
-            const markers = L.markerClusterGroup();
-
-            sensorData.forEach(sensor => {
-                let latLng = null;
-                let icon = null;
-                let popupText = "";
-
-        if (sensor.latitude != null && sensor.longitude != null) 
-        {
-            latLng = L.latLng(sensor.latitude, sensor.longitude);
-            icon = getSensorDescription(sensor) ?? greenDefaultIcon;
-            popupText = sensor.name || "Sensor LookO2";
-        } 
-        else if (sensor.location && sensor.location.latitude != null && sensor.location.longitude != null) //(sensor.location && sensor.location.latitude != null && sensor.location.longitude != null)
-        { 
-            latLng = L.latLng(sensor.location.latitude, sensor.location.longitude);
-            icon = getSensorDescription(sensor) ?? blueDefaultIcon;
-            popupText = sensor.name || "SensorSC";
-        }
-
-        if (latLng) {
-            const marker = L.marker(latLng, {icon: icon}).bindPopup(popupText);
-            markers.addLayer(marker);
-        }
-    });
-
-    // Add cluster group to the map
-	map.addLayer(markers);
-
-
+        map.addLayer(markers);
 
         let userLatLng = null;
         let routingControl = null;
@@ -198,10 +126,8 @@
             }, function (error) {
                 console.error("Błąd uzyskiwania lokalizacji: ", error);
             });
-        } else {
-            alert("Geolokalizacja nie jest obsługiwana przez Twoją przeglądarkę.");
         }
-        //Usage of "ContextMenu (RMB)" to create a waypoint
+
         map.on('contextmenu', function (e) {
             if (!userLatLng) {
                 alert("Lokalizacja użytkownika nie jest jeszcze dostępna.");
@@ -223,14 +149,10 @@
             }
 
             routingControl = L.Routing.control({
-                waypoints: [
-                    userLatLng,
-                    destLatLng
-                ],
+                waypoints: [userLatLng, destLatLng],
                 routeWhileDragging: false,
                 show: false,
-                createMarker: function () { return null; },
-
+                createMarker: () => null
             }).addTo(map);
         });
     });
