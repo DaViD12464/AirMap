@@ -32,5 +32,17 @@ namespace AirMap.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("GetPopUpDataBatch")]
+        public ActionResult<List<object>> GetPopUpDataBatchWithIds([FromBody] List<SensorModel> sensors)
+        {
+            var result = sensors.Select(sensor => new
+            {
+                sensorId = sensor.Id,
+                textResults = AirQualityHelper.TextHelper(sensor)
+            }).ToList<object>();
+            return Ok(result);
+        }
+
     }
 }
