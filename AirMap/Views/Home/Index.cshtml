@@ -73,7 +73,7 @@
             defaultGreen:            L.icon({ iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/green-dot.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
             defaultBlue:             L.icon({ iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
         };
-
+        //Icon Data fetching
         let iconNames = [];
         try {
             const response = await fetch('/api/sensor/GetIconDataBatch', {
@@ -84,6 +84,19 @@
             
             if (!response.ok) throw new Error("Failed to fetch icon data");
             iconNames = await response.json();
+        } catch (error) {
+            console.error("Error getting icon names:", error);
+        }
+        //Pop-up message (text) data fetching
+        let textValues = [];
+        try {
+            const response = await fetch('/api/sensor/GetPopUpDataBatch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(sensorData)
+            });
+            if (!response.ok) throw new Error("Failed to fetch text/Pop-up data");
+            textValues = await response.json();
         } catch (error) {
             console.error("Error getting icon names:", error);
         }
