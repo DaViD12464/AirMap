@@ -107,94 +107,97 @@ public class AirQualityHostedService : IHostedService, IDisposable
             #region LookO2
 
             if (url.Contains("looko2"))
-            { 
+            {
                 Console.WriteLine("\n\nAdding LookO2 data to DB...\n\n");
                 var lookO2Data = JsonConvert.DeserializeObject<List<LookO2Dto>>(content);
-                var lookO2DataModel = lookO2Data!.Select(SensorModel.FromDto).ToList();
-                using (var scope = _serviceScopeFactory.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var lookO2DataModel = lookO2Data!.Select(SensorModel.FromDto).ToHashSet();
 
-                    // Filter out duplicates and null/empty Device values
-                    var filteredModels = lookO2DataModel?
-                        .Where(m => !string.IsNullOrEmpty(m.Device)) // Exclude null/empty Device
-                        .Where(m => !m.Latitude.Equals(0.0) || !m.Longitude.Equals(0.0)) //ensure devices with Lat == 0 and Lon == 0 are not included
-                        .GroupBy(m => m.Device) // Group by Device
-                        .SelectMany(g => g);
-                    // Check for existing devices in the database
-                    var existingDevices = DatabaseHelper.GetAll<SensorModel>(dbContext).Select(m => m.Device);
-                    //var existingDevices = dbContext.LookO2Dtos
-                    //    .Select(m => m.Device);
+                // Create Database Scope
+                using var scope = _serviceScopeFactory.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                    // Exclude devices that already exist in the database
-                    var newModels = filteredModels!
-                        .Where(m => !existingDevices.Contains(m.Device));
+                // Filter out duplicates and null/empty Device values
+                var filteredModels = lookO2DataModel?
+                    .Where(m => !string.IsNullOrEmpty(m.Device)) // Exclude null/empty Device
+                    .Where(m => !m.Latitude.Equals(0.0) || !m.Longitude.Equals(0.0)) //ensure devices with Lat == 0 and Lon == 0 are not included
+                    .GroupBy(m => m.Device) // Group by Device
+                    .SelectMany(g => g)
+                    .ToHashSet();
 
-                    if (lookO2DataModel != null)
+                // Get Dictionary map to filter changes:
+                var existingModels = DatabaseHelper.GetAll<SensorModel>(dbContext)
+                    .Where(m => !string.IsNullOrEmpty(m.Device))
+                    .ToDictionary(m => m.Device!, m => m);
+
+                // Then filter both new and changed devices
+                var newOrUpdatedModels = filteredModels!
+                    .Where(m =>
                     {
-                        var i=1;
-                        foreach (var sensor in newModels)
+                        if (m.Device == null) return false;
+                        if (!existingModels.TryGetValue(m.Device, out var existing)) return true;
+
+                        return DataFetcherHelper.AreNotEqual(m.Pm1, existing.Pm1) ||
+                               DataFetcherHelper.AreNotEqual(m.Pm25, existing.Pm25) ||
+                               DataFetcherHelper.AreNotEqual(m.Pm10, existing.Pm10) ||
+                               DataFetcherHelper.AreNotEqual(m.Temperature, existing.Temperature) ||
+                               DataFetcherHelper.AreNotEqual(m.Humidity, existing.Humidity) ||
+                               DataFetcherHelper.AreNotEqual(m.Ijp, existing.Ijp);
+                    })
+                    .ToHashSet();
+
+
+                if (lookO2DataModel != null)
+                {
+                    var i = 1;
+                    foreach (var sensor in newOrUpdatedModels)
+                    {
+                        if (!sensor.Latitude.Equals(0.0) || !sensor.Longitude.Equals(0.0))
                         {
-                            //var timeValue = sensor.Epoch == "0" ? null : DateTimeOffset.FromUnixTimeSeconds(long.Parse(sensor.Epoch!)).ToString();
+                            var existingSensor = await dbContext.SensorModel.FirstOrDefaultAsync(s => s.Device == sensor.Device);
+                            var addOrUpdate = "";
 
-                            if (!sensor.Latitude.Equals(0.0) || !sensor.Longitude.Equals(0.0))
+                            if (existingSensor != null)
                             {
-                                var sensorModel = new SensorModel
-                                {
-                                    Device = sensor.Device,
-                                    Pm1 = sensor.Pm1,
-                                    Pm25 = sensor.Pm25,
-                                    Pm10 = sensor.Pm10,
-                                    Timestamp = sensor.Timestamp,
-                                    Latitude = sensor.Latitude,
-                                    Longitude = sensor.Longitude,
-                                    Name = sensor.Name,
-                                    Indoor = sensor.Indoor,
-                                    Temperature = sensor.Temperature,
-                                    Humidity = sensor.Humidity,
-                                    Hcho = sensor.Hcho,
-                                    AveragePm1 = sensor.AveragePm1,
-                                    AveragePm25 = sensor.AveragePm25,
-                                    AveragePm10 = sensor.AveragePm10,
-                                    IjpString = sensor.IjpString,
-                                    IjpDescription = sensor.IjpDescription,
-                                    Color = sensor.Color,
-                                };
-                                var existingSensor = await dbContext.SensorModel.FirstOrDefaultAsync(s => s.Device == sensorModel.Device);
-                                var addOrUpdate = "";
-                                if (existingSensor != null)
-                                {
-                                    dbContext.SensorModel.Update(existingSensor);
-                                    addOrUpdate = "U:";
-                                }
-                                else
-                                {
-                                    dbContext.SensorModel.Add(sensorModel);
-                                    addOrUpdate = "A:";
-                                }
-                                try
-                                {
-                                    await dbContext.SaveChangesAsync();
-                                }
-                                catch (DbUpdateException ex)
-                                {
-                                    Console.WriteLine(ex.InnerException?.Message ?? ex.Message);
-                                    Environment.Exit(1);
-                                }
-
-                                Console.Write(" "+addOrUpdate+i+" "); //Added as replacement for EF logging - will track NO. of records added
-                                i++;
+                                existingSensor.Pm1 = sensor.Pm1;
+                                existingSensor.Pm25 = sensor.Pm25;
+                                existingSensor.Pm10 = sensor.Pm10;
+                                existingSensor.Temperature = sensor.Temperature;
+                                existingSensor.Humidity = sensor.Humidity;
+                                existingSensor.Ijp = sensor.Ijp;
+                                existingSensor.Latitude = sensor.Latitude;
+                                existingSensor.Longitude = sensor.Longitude;
+                                dbContext.SensorModel.Update(existingSensor);
+                                addOrUpdate = "U:";
                             }
                             else
                             {
-                                Console.WriteLine($"\nSensor data is missing latitude or longitude. Skipped data.\n");
+                                dbContext.SensorModel.Add(sensor);
+                                addOrUpdate = "A:";
                             }
+
+                            Console.Write(" " + addOrUpdate + i + " ");
+                            i++;
                         }
-                     
+                        else
+                        {
+                            Console.WriteLine($"\nSensor data is missing latitude or longitude. Skipped data.\n");
+                        }
                     }
-                    else
-                        Console.WriteLine("\nSource1Data is empty.\n");
+
+                    try
+                    {
+                        Console.WriteLine("\nAdded to dbContext, ready to save to DB");
+                        await dbContext.SaveChangesAsync();
+                        Console.WriteLine("\nAdding to database finished.");
+                    }
+                    catch (DbUpdateException ex)
+                    {
+                        Console.WriteLine(ex.InnerException?.Message ?? ex.Message);
+                        Environment.Exit(1);
+                    }
                 }
+                else
+                    Console.WriteLine("\nSource1Data is empty.\n");
             }
 
             #endregion
@@ -205,85 +208,109 @@ public class AirQualityHostedService : IHostedService, IDisposable
             {
                 Console.WriteLine("\n\nAdding sensor.community data to DB...\n\n");
                 var scData = JsonConvert.DeserializeObject<List<SensorCommunityDto>>(content);
-                var scDataModel = scData!.Select(SensorModel.FromDto).ToList();
-                using (var scope = _serviceScopeFactory.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                    var filteredModels = scDataModel?
-                        .Where(m => m.Location != null && m.SensorDataValues != null)
-                        .Where(m => m.Location!.Latitude != 0 || m.Location!.Longitude != 0)
-                        .GroupBy(m =>
-                            $"{m.Sensor!.Pin}_{m.Location!.Latitude}_{m.Location!.Longitude}") // Unique by Pin + Lat/Lon
-                        .Select(g => g.First());
+                var scDataModel = scData!.Select(SensorModel.FromDto).ToHashSet();
 
-                    // Check existing devices in DB (might want a better uniqueness check - currently as combination of pin_lat_lon instead of Id)
-                    var existingDevices = DatabaseHelper.GetAll<SensorModel>(dbContext)
-                        .Where(m => m.Sensor != null && m.Location != null)
-                        .Select(m => new
-                        {
-                            m.Sensor!.Pin,
-                            m.Location!.Latitude,
-                            m.Location!.Longitude
-                        });
-                   
+                using var scope = _serviceScopeFactory.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                    var newModels = filteredModels!
-                        .Where(m => !existingDevices.Any(e =>
-                            e.Pin == m.Sensor!.Pin &&
-                            e.Latitude == m.Location!.Latitude &&
-                            e.Longitude == m.Location!.Longitude));
+                var filteredModels = scDataModel?
+                    .Where(m => m is { Location: not null, SensorDataValues: not null })
+                    .Where(m => m.Location!.Latitude != 0 || m.Location!.Longitude != 0)
+                    .GroupBy(m =>
+                        $"{m.Sensor!.Pin}_{m.Location!.Latitude}_{m.Location!.Longitude}") // Unique by Pin + Lat/Lon
+                    .Select(g => g.First())
+                    .ToHashSet();
 
-                    if (scDataModel != null)
+                // Check existing devices in DB (might want a better uniqueness check - currently as combination of pin_lat_lon instead of Id)
+                var existingModels = DatabaseHelper.GetAll<SensorModel>(dbContext)
+                    .Where(m => m is { Sensor: not null, Location: not null })
+                    .ToDictionary(m => m.Sensor?.Pin, m => m);
+
+                // Then filter both new and changed devices
+                var newOrUpdatedModels = filteredModels!
+                    .Where(m =>
                     {
-#if DEBUG
-                        var i = 1;
-#endif
-                        foreach (var sensor in newModels)
+                        var pin = m.Sensor?.Pin;
+                        if (pin == null) return false;
+                        if (!existingModels.TryGetValue(pin, out var existing)) return true;
+
+                        var currentDict = m.SensorDataValues!
+                            .GroupBy(v => v.ValueType.ToLowerInvariant())
+                            .ToDictionary(g => g.Key, g => g.FirstOrDefault()?.Value);
+
+                        var existingDict = existing.SensorDataValues!
+                            .GroupBy(v => v.ValueType.ToLowerInvariant())
+                            .ToDictionary(g => g.Key, g => g.FirstOrDefault()?.Value);
+
+                        // Build a union of all keys (value types)
+                        var allValueTypes = new HashSet<string>(currentDict.Keys);
+                        allValueTypes.UnionWith(existingDict.Keys);
+
+                        foreach (var valueType in allValueTypes)
                         {
-                            if (sensor.Location?.Latitude != null && sensor.Location?.Longitude != null)
+                            currentDict.TryGetValue(valueType, out var currentValue);
+                            existingDict.TryGetValue(valueType, out var existingValue);
+
+                            if (DataFetcherHelper.AreNotEqual(currentValue, existingValue))
+                                return true;
+                        }
+
+                        return false;
+                    })
+                    .ToHashSet();
+
+
+                if (scDataModel != null)
+                {
+#if DEBUG
+                    var i = 1;
+#endif
+                    foreach (var sensor in newOrUpdatedModels)
+                    {
+                        if (sensor.Location?.Latitude != null && sensor.Location?.Longitude != null)
+                        {
+                            var existingSensor = await dbContext.SensorModel.FirstOrDefaultAsync(s=> s.Sensor!.Pin.Equals(sensor.Sensor!.Pin));
+#if DEBUG
+                            var addOrUpdate = "";
+#endif
+                            if (existingSensor != null)
                             {
-                                var existingSensor = await dbContext.SensorModel.FirstOrDefaultAsync(s =>
-                                    (s.Location!.Latitude == sensor.Location!.Latitude) &&
-                                    (s.Location!.Longitude == sensor.Location!.Longitude));
+                                existingSensor.SensorDataValues = sensor.SensorDataValues;
+                                dbContext.SensorModel.Update(existingSensor);
 #if DEBUG
-                                var addOrUpdate = "";
-#endif
-                                if (existingSensor != null)
-                                {
-                                    dbContext.SensorModel.Update(existingSensor);
-#if DEBUG
-                                    addOrUpdate = "U:";
-#endif
-                                }
-                                else
-                                {
-                                    dbContext.SensorModel.Add(sensor);
-#if DEBUG
-                                    addOrUpdate = "A:";
-#endif
-                                }
-
-                                try
-                                {
-                                    await dbContext.SaveChangesAsync();
-                                }
-                                catch (DbUpdateException ex)
-                                {
-                                    Console.WriteLine(ex.InnerException?.Message ?? ex.Message);
-                                    Environment.Exit(1);
-                                }
-
-#if DEBUG
-                                Console.Write(" " + addOrUpdate + i +
-                                              " "); //Added as replacement for EF logging - will track NO. of records added
-                                i++;
+                                addOrUpdate = "U:";
 #endif
                             }
                             else
                             {
-                                Console.WriteLine($"\nSensor data is missing latitude or longitude. Skipped data.\n");
+                                dbContext.SensorModel.Add(sensor);
+#if DEBUG
+                                addOrUpdate = "A:";
+#endif
                             }
+
+#if DEBUG
+                            Console.Write(" " + addOrUpdate + i +
+                                          " "); //Added as replacement for EF logging - will track NO. of records added
+                            i++;
+#endif
                         }
+                        else
+                        {
+                            Console.WriteLine($"\nSensor data is missing latitude or longitude. Skipped data.\n");
+                        }
+                    }
+
+                    try
+                    {
+                        Console.WriteLine("\nAdded to dbContext, ready to save to DB");
+                        await dbContext.SaveChangesAsync();
+                        Console.WriteLine("\nAdding to database finished.");
+                    }
+                    catch (DbUpdateException ex)
+                    {
+                        Console.WriteLine(ex.InnerException?.Message ?? ex.Message);
+                        Environment.Exit(1);
                     }
                 }
             }
@@ -298,7 +325,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
         #endregion
     }
 
-    
+
 
 
     public Task StopAsync(CancellationToken cancellationToken)
