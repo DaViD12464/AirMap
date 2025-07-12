@@ -70,6 +70,7 @@
             sufficientAirQualityIcon:L.icon({ iconUrl: '/AirQualityMarkers/SufficientAQ.png', iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [0, -48] }),
             badAirQualityIcon:       L.icon({ iconUrl: '/AirQualityMarkers/BadAQ.png',      iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [0, -48] }),
             veryBadAirQualityIcon:   L.icon({ iconUrl: '/AirQualityMarkers/VeryBadAQ.png',  iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [0, -48] }),
+            unknownAirQualityIcon:   L.icon({ iconUrl: '/AirQualityMarkers/UnknownAQ.png',  iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [0, -48] }),
             defaultGreen:            L.icon({ iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/green-dot.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
             defaultBlue:             L.icon({ iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
         };
@@ -97,6 +98,7 @@
             });
             if (!response.ok) throw new Error("Failed to fetch text/Pop-up data");
             textValues = await response.json();
+            console.log("TextValuesResult:", textValues);
         } catch (error) {
             console.error("Error getting icon names:", error);
         }
@@ -105,7 +107,7 @@
 
         sensorData.forEach((sensor, index) => {
             let latLng = null;
-            let popupText = sensor.name || "Sensor";
+            let popupText = textValues[index].sensorId +"|||"+ JSON.stringify(textValues[index].textResults) || "Sensor";
             const iconName = iconNames[index].icon;
             let icon = icons[iconName.toString()] || icons["defaultGreen"];
 
