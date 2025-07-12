@@ -139,6 +139,10 @@ public static class DatabaseHelper
                     currentList = new List<SEntity>();
                     sEntityListProp.SetValue(entity, currentList);
                 }
+                else
+                {
+                    currentList.Clear();
+                }
 
                 var matchingSEntities = sEntities
                     .Where(se => {
