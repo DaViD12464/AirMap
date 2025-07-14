@@ -112,6 +112,9 @@ public class AirQualityHostedService : IHostedService, IDisposable
                 var lookO2Data = JsonConvert.DeserializeObject<List<LookO2Dto>>(content);
                 var lookO2DataModel = lookO2Data!.Select(SensorModel.FromDto).ToHashSet();
 
+                lookO2Data?.Clear();
+                lookO2Data = null;
+
                 // Create Database Scope
                 using var scope = _serviceScopeFactory.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -123,6 +126,9 @@ public class AirQualityHostedService : IHostedService, IDisposable
                     .GroupBy(m => m.Device) // Group by Device
                     .SelectMany(g => g)
                     .ToHashSet();
+
+                lookO2DataModel?.Clear();
+                lookO2DataModel = null;
 
                 // Get Dictionary map to filter changes:
                 var existingModels = DatabaseHelper.GetAll<SensorModel>(dbContext)
@@ -146,7 +152,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
                     .ToHashSet();
 
 
-                if (lookO2DataModel != null)
+                if (filteredModels != null)
                 {
                     var i = 1;
                     foreach (var sensor in newOrUpdatedModels)
@@ -194,6 +200,13 @@ public class AirQualityHostedService : IHostedService, IDisposable
                     {
                         Console.WriteLine(ex.InnerException?.Message ?? ex.Message);
                         Environment.Exit(1);
+                    }
+                    finally
+                    {
+                        filteredModels?.Clear();
+                        existingModels?.Clear();
+                        newOrUpdatedModels?.Clear();
+
                     }
                 }
                 else
@@ -269,7 +282,7 @@ public class AirQualityHostedService : IHostedService, IDisposable
                     {
                         if (sensor.Location?.Latitude != null && sensor.Location?.Longitude != null)
                         {
-                            var existingSensor = await dbContext.SensorModel.FirstOrDefaultAsync(s=> s.Sensor!.Pin.Equals(sensor.Sensor!.Pin));
+                            var existingSensor = await dbContext.SensorModel.FirstOrDefaultAsync(s => s.Sensor!.Pin.Equals(sensor.Sensor!.Pin));
 #if DEBUG
                             var addOrUpdate = "";
 #endif
@@ -312,9 +325,19 @@ public class AirQualityHostedService : IHostedService, IDisposable
                         Console.WriteLine(ex.InnerException?.Message ?? ex.Message);
                         Environment.Exit(1);
                     }
+                    finally
+                    {
+                        filteredModels?.Clear();
+                        filteredModels = null;
+                        existingModels?.Clear();
+                        existingModels = null;
+                        newOrUpdatedModels?.Clear();
+                        newOrUpdatedModels = null;
+                    }
                 }
             }
 
+            content = null;
         }
         else
         {
@@ -322,7 +345,13 @@ public class AirQualityHostedService : IHostedService, IDisposable
             Console.WriteLine($"\nStatus code: {response.StatusCode}\n");
             Console.WriteLine($"\nReason: {response.ReasonPhrase} \n");
         }
+
+
         #endregion
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
     }
 
 
