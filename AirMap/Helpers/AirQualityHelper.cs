@@ -83,7 +83,7 @@ public static class AirQualityHelper
 
                         // No values found
                         if (sensorValues.Count == 0)
-                            return "unknownAirQualityIcon"; // TODO: add n/a icon name after adding unknown data icon to frontend
+                            return "unknownAirQualityIcon";
 
                         airQualityLevel = 1;
 
@@ -127,7 +127,7 @@ public static class AirQualityHelper
         return "";
     }
 
-    private static int GetAirQualityLevel(double value, (double min, double max)[] thresholds) //TODO:add logic
+    private static int GetAirQualityLevel(double value, (double min, double max)[] thresholds)
     {
         for (var i = 0; i < thresholds.Length; i++)
             if (value >= thresholds[i].min && value <= thresholds[i].max)
