@@ -16,24 +16,46 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
-	<!-- Leaflet Routing -->
+    <!-- Leaflet Routing -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 	
-	<!-- MarkerCluster plugin --> 
+    <!-- MarkerCluster plugin --> 
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.default.css" />
 
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 </head>
+
+<style>
+    /*
+     * These CSS rules affect the tooltips within maps with the custom-popup
+     * class. See the full CSS for all customizable options:
+     * https://github.com/mapbox/mapbox.js/blob/001754177f3985c0e6b4a26e3c869b0c66162c99/theme/style.css#L321-L366
+    */
+    .custom-popup .leaflet-popup-content-wrapper {
+      background:#2c3e50;
+      color:#fff;
+      font-size:16px;
+      line-height:24px;
+      }
+    .custom-popup .leaflet-popup-content-wrapper a {
+      color:rgba(255,255,255,0.5);
+      }
+    .custom-popup .leaflet-popup-tip-container {
+      width:30px;
+      height:15px;
+      }
+    .custom-popup .leaflet-popup-tip {
+      border-left:15px solid transparent;
+      border-right:15px solid transparent;
+      border-top:15px solid #2c3e50;
+      }
+</style>
+
 <body>
-
     <!-- Map container -->
-    <div id="map"></div>
-
-    <!-- Link Leaflet JavaScript  -->
-    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-Q6EutvdmLDMb4VjRbH/N05Dg8gW/MIn/k2N3uwRI0B8=" crossorigin=""></script>
-
+    <div class='custom-popup' id='map'></div>
 </body>
 </html>
 
@@ -74,34 +96,20 @@
             defaultGreen:            L.icon({ iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/green-dot.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
             defaultBlue:             L.icon({ iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
         };
-        //Icon Data fetching
-        let iconNames = [];
-        try {
-            const response = await fetch('/api/sensor/GetIconDataBatch', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(sensorData)
-            });
-            
-            if (!response.ok) throw new Error("Failed to fetch icon data");
-            iconNames = await response.json();
-        } catch (error) {
-            console.error("Error getting icon names:", error);
-        }
-        //Pop-up message (text) data fetching
-        let textValues = [];
-        try {
-            const response = await fetch('/api/sensor/GetPopUpDataBatch', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(sensorData)
-            });
-            if (!response.ok) throw new Error("Failed to fetch text/Pop-up data");
-            textValues = await response.json();
-            console.log("TextValuesResult:", textValues);
-        } catch (error) {
-            console.error("Error getting icon names:", error);
-        }
+        //Icon Data fetching & PopUp Data fetching
+        const [iconNames, textValues] = await Promise.all([
+                fetch('/api/sensor/GetIconDataBatch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(sensorData)
+                }).then(r => r.json()),
+
+                fetch('/api/sensor/GetPopUpDataBatch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(sensorData)
+                }).then(r => r.json())
+            ]);
 
         const markers = L.markerClusterGroup();
 
@@ -123,6 +131,7 @@
                 markers.addLayer(marker);
             }
         });
+        delete sensorData;
 
         map.addLayer(markers);
 
