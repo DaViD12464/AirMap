@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AirMap.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace AirMap.Helpers;
 
@@ -42,10 +43,10 @@ public static class DatabaseHelper
     ///     populated navigation properties.
     /// </returns>
     /// <exception cref="InvalidOperationException">
-    ///     Thrown if the related entity type does not have an 'Id' property or if the main entity type does not have the
+    ///     Thrown if the related entity type does not have an 'id' property or if the main entity type does not have the
     ///     required foreign key or navigation property.
     /// </exception>
-    public static async Task<List<TEntity>> GetMissingData<TEntity, SEntity>(List<TEntity> input, DbContext context)
+    public static async Task<List<TEntity>> GetMissingData<TEntity, SEntity>(List<TEntity?> input, DbContext context)
     where TEntity : class // T -> Type
     where SEntity : class
     {
@@ -90,7 +91,7 @@ public static class DatabaseHelper
     ///     populated navigation properties.
     /// </returns>
     /// <exception cref="InvalidOperationException">
-    ///     Thrown if the related entity type does not have an 'Id' property or if the main entity type does not have the
+    ///     Thrown if the related entity type does not have an 'id' property or if the main entity type does not have the
     ///     required foreign key or navigation property.
     /// </exception>
     public static async Task<List<TEntity>> GetMissingDataFromList<TEntity, SEntity>(List<TEntity> input, DbContext context)
