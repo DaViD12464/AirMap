@@ -61,8 +61,8 @@
 
 @{
 	var allSensors = await DatabaseHelper.GetAllAsync<SensorModel>(DbContext);
-	allSensors = await DatabaseHelper.GetMissingData<SensorModel, Location>(allSensors, DbContext);
-	allSensors = await DatabaseHelper.GetMissingData<SensorModel, Sensor>(allSensors, DbContext);
+	allSensors = await DatabaseHelper.GetMissingData<SensorModel, Location>(allSensors!, DbContext);
+	allSensors = await DatabaseHelper.GetMissingData<SensorModel, Sensor>(allSensors!, DbContext);
 	allSensors = await DatabaseHelper.GetMissingDataFromList<SensorModel, SensorDataValues>(allSensors, DbContext);
 	
     var serializedSensorData = Json.Serialize(allSensors); // To resolve TS1109

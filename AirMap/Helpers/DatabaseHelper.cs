@@ -75,7 +75,7 @@ public static class DatabaseHelper
                 tEntityNavProp.SetValue(item, sEntity);
         }
 
-        return input;
+        return input!;
     }
 
     /// <summary>
