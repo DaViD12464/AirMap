@@ -53,14 +53,6 @@ header {
         font-size: 1.05em; /* Slightly increase text size */
     }
 
-#map {
-    width: 98vw;
-    height: 80%;
-    position: fixed;
-    left: 0;
-    margin-left: 1vw;
-    margin-right: 1vw;
-}
 
 main {
     flex: 1;
