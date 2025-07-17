@@ -194,7 +194,7 @@ public static class AirQualityHelper
                 return L2.ToString().Replace("\r\n", "<br/>");
             }
 
-            if (sensor.Location is { Latitude: not null, Longitude: not null }) //SC //TODO: Reformat returned pop-up message values to return readings for SensorCommunity
+            if (sensor.Location is { Latitude: not null, Longitude: not null }) //SC 
             {
                 StringBuilder SC = new StringBuilder();
                 //var builder = new StringBuilder();
@@ -236,7 +236,6 @@ public static class AirQualityHelper
                     sensor.SensorDataValues?.Where(x => x.ValueType.Equals("pressure_at_sealevel")).FirstOrDefault()?.Value != null || 
                     sensor.SensorDataValues?.Where(x => x.ValueType.Equals("noise_LAeq")).FirstOrDefault()?.Value != null) 
                     SC.AppendLine("---------------------------------------------------");
-                // Add more key-value pairs as needed to be displayed in Pop-up message
                 return SC.ToString().Replace("\r\n", "<br/>");
             }
             else
