@@ -1,4 +1,5 @@
-﻿using AirMap.Models;
+﻿using System.Text;
+using AirMap.Models;
 using Microsoft.JSInterop;
 
 namespace AirMap.Helpers;
@@ -137,60 +138,116 @@ public static class AirQualityHelper
     }
 
 
-    [JSInvokable("TextHelper")] //TODO: Create an TextBuilders for SensorCommunity and Look02 sensors
-    public static Dictionary<string, object>? TextHelper(SensorModel sensor)
+    [JSInvokable("TextHelper")]
+    public static string TextHelper(SensorModel sensor)
     {
         try
         {
             if (sensor is { Latitude: not null, Longitude: not null }) //Look02
-                return new Dictionary<string, object>
+            {
+                StringBuilder L2 = new StringBuilder();
+                //var builder = new StringBuilder();
+                //using var stringWriter = new StringWriter(builder)
+                //{
+                //    NewLine = "<br/>"
+                //};
+                if (!string.IsNullOrWhiteSpace(sensor.Name))
+                    L2.AppendLine($"Name: {sensor.Name}");
+                else 
+                    L2.AppendLine("Name: LookO2_Sensor");
+                if (sensor.Pm1.HasValue)
+                    L2.AppendLine($"PM1: {sensor.Pm1.Value} µg/m³");
+                if (sensor.Pm25.HasValue)
+                    L2.AppendLine($"PM2.5: {sensor.Pm25.Value} µg/m³");
+                if (sensor.Pm10.HasValue)
+                    L2.AppendLine($"PM10: {sensor.Pm10.Value} µg/m³");
+                if (sensor.Hcho.HasValue && sensor.Hcho != 0)
+                    L2.AppendLine($"HcHo: {sensor.Hcho.Value} µg/m³");
+                L2.AppendLine("---------------------------------------------------");
+                if (sensor.AveragePm1.HasValue)
+                    L2.AppendLine($"Średnie PM1: {sensor.AveragePm1.Value} µg/m³");
+                if (sensor.AveragePm25.HasValue)
+                    L2.AppendLine($"Średnie PM2.5: {sensor.AveragePm25.Value} µg/m³");
+                if (sensor.AveragePm10.HasValue)
+                    L2.AppendLine($"Średnie PM10: {sensor.AveragePm10.Value}  µg/m³");
+                if (sensor.AverageHcho.HasValue)
+                    L2.AppendLine($"Średnie HCHO: {sensor.AverageHcho.Value}  µg/m³");
+                L2.AppendLine("---------------------------------------------------");
+                if (sensor.Temperature.HasValue && sensor.Temperature != 0)  // workaround - will not show values if Temperature is 0°C !!! 
+                    L2.AppendLine($"Temperatura: {sensor.Temperature.Value} °C");
+                if (sensor.Humidity.HasValue && sensor.Humidity != 0)
+                    L2.AppendLine($"Wilgotność: {sensor.Humidity.Value} %");
+                L2.AppendLine("---------------------------------------------------");
+                if (sensor.IjpString is not null)
                 {
-                    { "Name", sensor.Name ?? "LookO2_Sensor" },
-                    { "PM1", sensor.Pm1.ToString() ?? "n/a" },
-                    { "PM25", sensor.Pm25.ToString() ?? "n/a" },
-                    { "PM10", sensor.Pm10.ToString() ?? "n/a" },
-                    { "Latitude", sensor.Latitude },
-                    { "Longitude", sensor.Longitude }
-                    // Add more key-value pairs as needed to be displayed in Pop-up message
-                };
-            if (sensor.Location is { Latitude: not null, Longitude: not null }) //SC
-                return new
-                    Dictionary<string, object> //TODO: Reformat returned pop-up message values to return readings for SensorCommunity 
-                    {
-                        { "Name", sensor.Name ?? "SensorCommunity_Sensor" },
-                        {
-                            "PM1",
-                            sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P0")).FirstOrDefault()?.Value
-                                .ToString() ?? "n/a"
-                        },
-                        {
-                            "PM10",
-                            sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P1")).FirstOrDefault()?.Value
-                                .ToString() ?? "n/a"
-                        },
-                        {
-                            "PM25",
-                            sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P2")).FirstOrDefault()?.Value
-                                .ToString() ?? "n/a"
-                        },
-                        {
-                            "PM4",
-                            sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P4")).FirstOrDefault()?.Value
-                                .ToString() ?? "n/a"
-                        },
-                        //{ "PM10", sensor.Pm10Value },
-                        { "Latitude", sensor.Location.Latitude },
-                        { "Longitude", sensor.Location.Longitude }
-                        // Add more key-value pairs as needed to be displayed in Pop-up message
-                    };
+                    L2.AppendLine("Wskaźnik jakości powietrza:");
+                    L2.AppendLine($"{sensor.IjpString}");
+                }
+                if (sensor.IjpDescription is not null)
+                {
+                    L2.AppendLine("---------------------------------------------------");
+                    L2.AppendLine($"{sensor.IjpDescription}");
+                    L2.AppendLine("---------------------------------------------------");
+                }
 
-            throw new Exception(
-                "Exception in AQ_TEXTHelper: Unknown sensor, sensor has NULL Latitude & Longitude values.");
+
+                return L2.ToString().Replace("\r\n", "<br/>");
+            }
+
+            if (sensor.Location is { Latitude: not null, Longitude: not null }) //SC //TODO: Reformat returned pop-up message values to return readings for SensorCommunity
+            {
+                StringBuilder SC = new StringBuilder();
+                //var builder = new StringBuilder();
+                //using var stringWriter = new StringWriter(builder)
+                //{
+                //    NewLine = "<br/>"
+                //};
+                if (!string.IsNullOrWhiteSpace(sensor.Name))
+                    SC.AppendLine($"Name: {sensor.Name}");
+                else
+                    SC.AppendLine("Name: SensorCommunity_Sensor");
+                if (sensor.Location.Country != null && sensor.Timestamp != null)
+                    SC.AppendLine($"{sensor.Location.Country} | {sensor.Timestamp}");
+                SC.AppendLine("---------------------------------------------------");
+                if (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P0")).FirstOrDefault()?.Value != null)
+                    SC.AppendLine($"PM1: {sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P0")).FirstOrDefault()?.Value.ToString()} µg/m³");
+                if (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P2")).FirstOrDefault()?.Value != null)
+                    SC.AppendLine($"PM2.5: {sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P2")).FirstOrDefault()?.Value.ToString()} µg/m³");
+                if (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P1")).FirstOrDefault()?.Value != null)
+                    SC.AppendLine($"PM10: {sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P1")).FirstOrDefault()?.Value.ToString()} µg/m³");
+                if (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P4")).FirstOrDefault()?.Value != null)
+                    SC.AppendLine($"PM4: {sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P4")).FirstOrDefault()?.Value.ToString()} µg/m³");
+                if ((sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P0")).FirstOrDefault()?.Value == null) &&
+                    (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P1")).FirstOrDefault()?.Value == null) &&
+                    (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P2")).FirstOrDefault()?.Value == null) &&
+                    (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P4")).FirstOrDefault()?.Value == null))
+                    SC.AppendLine("Brak danych z odczytów PM1 / PM2.5 / PM10 / PM4.");
+                SC.AppendLine("---------------------------------------------------");
+                if (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("temperature")).FirstOrDefault()?.Value != null)
+                    SC.AppendLine($"Temperatura: {sensor.SensorDataValues?.Where(x => x.ValueType.Equals("temperature")).FirstOrDefault()?.Value.ToString()} °C");
+                if (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("humidity")).FirstOrDefault()?.Value != null)
+                    SC.AppendLine($"Wilgotność: {sensor.SensorDataValues?.Where(x => x.ValueType.Equals("humidity")).FirstOrDefault()?.Value.ToString()} %");
+                if (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("pressure_at_sealevel")).FirstOrDefault()?.Value != null)
+                    SC.AppendLine($"Ciśnienie: {(sensor.SensorDataValues?.Where(x => x.ValueType.Equals("pressure_at_sealevel")).FirstOrDefault()?.Value /100).ToString()} hPa");
+                if (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("noise_LAeq")).FirstOrDefault()?.Value != null)
+                    SC.AppendLine($"Głośność: {sensor.SensorDataValues?.Where(x => x.ValueType.Equals("noise_LAeq")).FirstOrDefault()?.Value.ToString()} dB");
+                if (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("temperature")).FirstOrDefault()?.Value != null ||
+                    sensor.SensorDataValues?.Where(x => x.ValueType.Equals("humidity")).FirstOrDefault()?.Value != null ||
+                    sensor.SensorDataValues?.Where(x => x.ValueType.Equals("pressure_at_sealevel")).FirstOrDefault()?.Value != null || 
+                    sensor.SensorDataValues?.Where(x => x.ValueType.Equals("noise_LAeq")).FirstOrDefault()?.Value != null) 
+                    SC.AppendLine("---------------------------------------------------");
+                // Add more key-value pairs as needed to be displayed in Pop-up message
+                return SC.ToString().Replace("\r\n", "<br/>");
+            }
+            else
+            {
+                throw new Exception("Exception in AQ_TEXTHelper: Unknown sensor, sensor has NULL Latitude & Longitude values.");
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Exception in AQ_TEXTHelper: {ex.Message}");
-            return null;
+            return null!;
         }
     }
 }

@@ -68,8 +68,8 @@ namespace AirMap.Controllers
 
             var tasks = new[]
             {
-                DatabaseHelper.GetMissingData<SensorModel, Location>(allSensors, _dbContext),
-                DatabaseHelper.GetMissingData<SensorModel, Sensor>(allSensors, _dbContext),
+                DatabaseHelper.GetMissingData<SensorModel, Location>(allSensors!, _dbContext),
+                DatabaseHelper.GetMissingData<SensorModel, Sensor>(allSensors!, _dbContext),
                 DatabaseHelper.GetMissingDataFromList<SensorModel, SensorDataValues>(allSensors, _dbContext)
             };
 

@@ -11,15 +11,15 @@ document.addEventListener("DOMContentLoaded", async function () {
     const sensorData = JSON.parse(document.getElementById('sensorData').textContent);
 
     const icons = {
-        veryGoodAirQualityIcon: L.icon({ iconUrl: '/AirQualityMarkers/VeryGoodAQ.png', iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [0, -48] }),
-        goodAirQualityIcon: L.icon({ iconUrl: '/AirQualityMarkers/GoodAQ.png', iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [0, -48] }),
-        moderateAirQualityIcon: L.icon({ iconUrl: '/AirQualityMarkers/ModerateAQ.png', iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [0, -48] }),
-        sufficientAirQualityIcon: L.icon({ iconUrl: '/AirQualityMarkers/SufficientAQ.png', iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [0, -48] }),
-        badAirQualityIcon: L.icon({ iconUrl: '/AirQualityMarkers/BadAQ.png', iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [0, -48] }),
-        veryBadAirQualityIcon: L.icon({ iconUrl: '/AirQualityMarkers/VeryBadAQ.png', iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [0, -48] }),
-        unknownAirQualityIcon: L.icon({ iconUrl: '/AirQualityMarkers/UnknownAQ.png', iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [0, -48] }),
-        defaultGreen: L.icon({ iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/green-dot.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-        defaultBlue: L.icon({ iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+        veryGoodAirQualityIcon: L.icon({ iconUrl: '/AirQualityMarkers/VeryGoodAQ.png', iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
+        goodAirQualityIcon: L.icon({ iconUrl: '/AirQualityMarkers/GoodAQ.png', iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
+        moderateAirQualityIcon: L.icon({ iconUrl: '/AirQualityMarkers/ModerateAQ.png', iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
+        sufficientAirQualityIcon: L.icon({ iconUrl: '/AirQualityMarkers/SufficientAQ.png', iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
+        badAirQualityIcon: L.icon({ iconUrl: '/AirQualityMarkers/BadAQ.png', iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
+        veryBadAirQualityIcon: L.icon({ iconUrl: '/AirQualityMarkers/VeryBadAQ.png', iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
+        unknownAirQualityIcon: L.icon({ iconUrl: '/AirQualityMarkers/UnknownAQ.png', iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
+        defaultGreen: L.icon({ iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/green-dot.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [6, -32] }),
+        defaultBlue: L.icon({ iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [6, -32] }),
     };
     //Icon Data fetching & PopUp Data fetching
     const [iconNames, textValues] = await Promise.all([
@@ -34,13 +34,14 @@ document.addEventListener("DOMContentLoaded", async function () {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sensorData)
         }).then(r => r.json())
+        
     ]);
 
     const markers = L.markerClusterGroup();
 
     sensorData.forEach((sensor, index) => {
         let latLng = null;
-        let popupText = textValues[index].sensorId + "|||" + JSON.stringify(textValues[index].textResults) || "Sensor";
+        let popupText = "SensorId: " + textValues[index].sensorId + "<br/>" + ((textValues[index].textResults) || "Sensor");
         const iconName = iconNames[index].icon;
         let icon = icons[iconName.toString()] || icons["defaultGreen"];
 
