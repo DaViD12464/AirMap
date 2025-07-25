@@ -1,7 +1,7 @@
 ﻿// wwwroot/js/map/route.js
 
 import { aStar } from "./astar.js";
-import SessionCache from "../utils/sessions.js/index.js";
+import SessionCache from "../utils/sessions.js";
 
 async function fetchRouteBetweenWaypoints(waypoints) {
     const fullPath = [];

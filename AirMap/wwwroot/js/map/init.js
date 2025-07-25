@@ -1,7 +1,7 @@
 ﻿// wwwroot/js/map/init.js
 import { setupRouting, removeRouteLine, removeDestinationMarker } from "./route.js";
 // ReSharper disable once InconsistentNaming
-import SessionCache from "./utils/sessions.js";
+import SessionCache from "../utils/sessions.js";
 import createLocateControl from "./controls/locateControl.js"; 
 import topRightControl from "./controls/menu.js";
 
