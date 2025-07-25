@@ -59,7 +59,8 @@ namespace AirMap.Controllers
 
             return Ok(allSensors);
         }
-
+        //not used, kept if manual data pulls would be needed
+        #region ManualSensorDataPull 
 
         [HttpGet("GetAllSensorDataManual")]
         public async Task<ActionResult<List<SensorModel>>> GetAllSensorDataManual()
@@ -90,6 +91,8 @@ namespace AirMap.Controllers
                     modelsWithSensor[i].Sensor = sensorsFilled[i];
                 }
             }
+
+            #endregion
 
             return Ok(results[2]);
         }
