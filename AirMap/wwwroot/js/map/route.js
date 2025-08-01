@@ -48,11 +48,30 @@ function calculateAirScore(routePoints, goodMarkers, radiusMeters = 500) {
 let routeLine = null;
 let destinationMarker = null;
 
+export function restoreRouteLine(map) {
+    const cachedRoute = SessionCache.get("routeLine");
+    if (cachedRoute && cachedRoute.length > 1) {
+        routeLine = L.polyline(cachedRoute, { color: "green", weight: 5 }).addTo(
+            map
+        );
+    }
+}
+
 export function removeRouteLine(map) {
     if (routeLine) {
         map.removeLayer(routeLine);
         routeLine = null;
-        if (SessionCache.exists("routeLine")) SessionCache.remove("routeLine");
+    }
+    if (SessionCache.exists("routeLine")) SessionCache.remove("routeLine");
+}
+
+export function restoreDestinationMarker(map) {
+    const cachedMarker = SessionCache.get("destinationMarker");
+    if (cachedMarker) {
+        destinationMarker = L.marker(cachedMarker)
+            .addTo(map)
+            .bindPopup("Nowy punkt docelowy")
+            .openPopup();
     }
 }
 
@@ -61,9 +80,14 @@ export function removeDestinationMarker(map) {
         map.removeLayer(destinationMarker);
         destinationMarker = null;
     }
+    if (SessionCache.exists("destinationMarker"))
+        SessionCache.remove("destinationMarker");
 }
 
 export function setupRouting(map, getStartLatLng, goodMarkers) {
+    if (map._hasRoutingHandler) return;
+    map._hasRoutingHandler = true;
+
     map.on("contextmenu",
         async function(e) {
             removeRouteLine(map);
@@ -75,11 +99,12 @@ export function setupRouting(map, getStartLatLng, goodMarkers) {
                 return;
             }
 
-            if (destinationMarker) map.removeLayer(destinationMarker);
+            removeDestinationMarker(map);
             destinationMarker = L.marker(destLatLng)
                 .addTo(map)
                 .bindPopup("Nowy punkt docelowy")
                 .openPopup();
+            SessionCache.set("destinationMarker", destLatLng);
 
             const graphPoints = [userLatLng, ...goodMarkers, destLatLng];
             const aStarPath = aStar(userLatLng, destLatLng, graphPoints);

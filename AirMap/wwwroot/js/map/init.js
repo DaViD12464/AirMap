@@ -1,14 +1,18 @@
 ﻿// wwwroot/js/map/init.js
-import { setupRouting, removeRouteLine, removeDestinationMarker } from "./route.js";
-// ReSharper disable once InconsistentNaming
+import {
+    setupRouting,
+    removeRouteLine,
+    removeDestinationMarker,
+    restoreRouteLine,
+    restoreDestinationMarker,
+} from "./route.js";
 import SessionCache from "../utils/sessions.js";
-import createLocateControl from "./controls/locateControl.js"; 
+import createLocateControl from "./controls/locateControl.js";
 import topRightControl from "./controls/menu.js";
 
 document.addEventListener("DOMContentLoaded",
     async function() {
         const map = L.map("map").setView([52.1143385, 19.4236714], 7);
-        let startMarker = null;
         let currentStartLatLng = null;
 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -16,7 +20,6 @@ document.addEventListener("DOMContentLoaded",
                 maxZoom: 19,
                 attribution: "© OpenStreetMap",
             }).addTo(map);
-
 
         const sensorData = await fetch("/api/sensor/GetAllSensorData")
             .then((res) => res.json())
@@ -41,7 +44,7 @@ document.addEventListener("DOMContentLoaded",
         ]);
 
         const icons = {
-            veryGoodAirQualityIcon: L.icon({ iconUrl: "/AirQualityMarkers/VeryGoodAQ.png", iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
+            veryGoodAirQualityIcon: L.icon({iconUrl: "/AirQualityMarkers/VeryGoodAQ.png", iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
             goodAirQualityIcon: L.icon({ iconUrl: "/AirQualityMarkers/GoodAQ.png", iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
             moderateAirQualityIcon: L.icon({ iconUrl: "/AirQualityMarkers/ModerateAQ.png", iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
             sufficientAirQualityIcon: L.icon({ iconUrl: "/AirQualityMarkers/SufficientAQ.png", iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
@@ -57,7 +60,8 @@ document.addEventListener("DOMContentLoaded",
 
         sensorData.forEach((sensor, index) => {
             let latLng = null;
-            let popupText = "SensorId: " + textValues[index].sensorId + "<br/>" + ((textValues[index].textResults) || "Sensor");
+            const popupText =
+                `SensorId: ${textValues[index].sensorId}<br/>${textValues[index].textResults || "Sensor"}`;
             const iconName = iconNames[index].icon;
             let icon = icons[iconName] || icons.defaultGreen;
 
@@ -76,10 +80,9 @@ document.addEventListener("DOMContentLoaded",
                 markers.addLayer(marker);
 
                 if (
-                    icon.options.iconUrl.includes("VeryBadAQ.png") ||
-                    icon.options.iconUrl.includes("GoodAQ.png") ||
-                    icon.options.iconUrl.includes("VeryGoodAQ.png")
-                    
+                    icon.options.iconUrl.includes("ModerateAQ.png") ||
+                        icon.options.iconUrl.includes("GoodAQ.png") ||
+                        icon.options.iconUrl.includes("VeryGoodAQ.png")
                 ) {
                     goodQualityMarkers.push(latLng);
                 }
@@ -88,22 +91,33 @@ document.addEventListener("DOMContentLoaded",
 
         map.addLayer(markers);
 
+        function getCurrentStartLatLng() {
+            const cached = SessionCache.get("startLatLng");
+            return cached ? L.latLng(cached.lat, cached.lng) : null;
+        }
+
+        SessionCache.remove("routeLine");
+        SessionCache.remove("startLatLng");
+        SessionCache.remove("destinationMarker");
+
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
-                    currentStartLatLng = L.latLng(
+                    const userLatLng = L.latLng(
                         position.coords.latitude,
                         position.coords.longitude
                     );
+                    SessionCache.set("startLatLng", userLatLng);
 
-                    if (startMarker) map.removeLayer(startMarker);
-                    startMarker = L.marker(currentStartLatLng)
+                    if (map._startMarker) map.removeLayer(map._startMarker);
+                    map._startMarker = L.marker(userLatLng)
                         .addTo(map)
                         .bindPopup("Twoja aktualna lokalizacja")
                         .openPopup();
 
-                    map.setView(currentStartLatLng, 10);
-                    setupRouting(map, () => currentStartLatLng, goodQualityMarkers);
+                    map.setView(userLatLng, 10);
+
+                    setupRouting(map, () => userLatLng, goodQualityMarkers);
                 },
                 (error) => {
                     console.error("Błąd uzyskiwania lokalizacji:", error);
@@ -113,41 +127,35 @@ document.addEventListener("DOMContentLoaded",
             alert("Geolokalizacja niedostępna.");
         }
 
+        SessionCache.remove("routeLine");
+
+        restoreRouteLine(map);
+        restoreDestinationMarker(map);
+
         map.on("click",
             function(e) {
-                if (e.originalEvent.lon) {
+                if (e.originalEvent.ctrlKey) {
                     removeRouteLine(map);
                     removeDestinationMarker(map);
 
-                    if (startMarker) map.removeLayer(startMarker);
-                    currentStartLatLng = e.latlng;
+                    if (map._startMarker) map.removeLayer(map._startMarker);
+                    SessionCache.set("startLatLng", e.latlng);
 
-                    startMarker = L.marker(currentStartLatLng
-                            //,
-                            //{
-                            //    icon: L.icon({
-                            //        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-                            //        iconSize: [32, 32],
-                            //        iconAnchor: [16, 32],
-                            //        popupAnchor: [0, -32]
-                            //    })
-                            //}
-                        )
+                    map._startMarker = L.marker(e.latlng)
                         .addTo(map)
                         .bindPopup("Punkt startowy (Ctrl+klik)")
                         .openPopup();
 
-                    setupRouting(map, () => currentStartLatLng, goodQualityMarkers);
+                    setupRouting(map, getCurrentStartLatLng, goodQualityMarkers);
                 }
             });
 
         const locateControl = createLocateControl({
-            startMarker,
             currentStartLatLng,
-            goodQualityMarkers
+            goodQualityMarkers,
         });
 
         locateControl.addTo(map);
-
         topRightControl.addTo(map);
+        setupRouting(map, getCurrentStartLatLng, goodQualityMarkers);
     });
