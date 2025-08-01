@@ -11,6 +11,13 @@
     <title>@ViewData["Title"] - AirMap</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    
+    
+    <!-- Boxicons CSS-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css">
+    <!-- Cookies script-->
+    <link rel="stylesheet" href="~/css/cookies.css" asp-append-version="true" />
+    <script type="module" src="~/js/cookies.js" asp-append-version="true" defer></script>
 </head>
 <body>
     <header>
@@ -29,6 +36,9 @@
                         <li class="menu-button">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">|&nbsp; Privacy &nbsp;|</a>
                         </li>
+                        <li class="menu-button">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="FAQ">|&nbsp; FAQ &nbsp;|</a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -43,10 +53,10 @@
     <footer class="border-top footer text-muted">
         <div id="footerText">
             <span>
-                <a asp-page="/Index">&copy; 2024 AirMap</a>, by <a href="@SocialMediaLinks.Value.Developer" target="_blank" rel="noopener noreferrer">Dawid Czernik</a>
-                &nbsp; | &nbsp;<a asp-page="/FooterPages/Privacy" target="_blank">Polityka prywatności</a> <!--fill in links for sub-sites -->
-                &nbsp; | &nbsp;<a asp-page="/FooterPages/TOS" target="_blank">Regulamin</a> <!--fill in links for sub-sites -->
-                &nbsp;| &nbsp;<a asp-page="/FooterPages/Cookies" target="_blank">Ciasteczka</a> <!--fill in links for sub-sites -->
+                <a asp-controller="Home" asp-action="Index">&copy; 2025 AirMap</a>, by <a href="@SocialMediaLinks.Value.Developer" target="_blank" rel="noopener noreferrer">Dawid Czernik</a>
+                &nbsp; | &nbsp;<a  asp-controller="Home" asp-action="Privacy" target="_blank">Polityka prywatności</a> 
+                &nbsp; | &nbsp;<a  asp-controller="Home" asp-action="TOS" target="_blank">Regulamin</a> <!-- TODO: fill in links for sub-sites -->
+                &nbsp;| &nbsp;<a  asp-controller="Home" asp-action="Cookies" target="_blank">Ciasteczka</a> 
             </span>
         </div>
     </footer>
@@ -54,5 +64,25 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
-</body>
+    
+    
+    
+    <!-- Cookie consent -->
+    <div class="cookies">
+        <header>
+            <i class="bx bx-cookie"></i>
+            <h2>Ciasteczka</h2>
+        </header>
+        <div class="data">
+            <p>Ta strona używa plików cookies, aby zapewnić najlepsze wrażenia na naszej stronie.
+                <span class="tab"></span>
+                <a asp-area="" asp-controller="Home" asp-action="Cookies" target="_blank">Przeczytaj więcej...</a></p>
+        </div>
+        <div class="buttons">
+            <button class="button" id="acceptButton">Zgadzam się</button>
+            <button class="button">Odrzuć</button>
+        </div>
+    </div>
+
+    </body>
 </html>
