@@ -1,13 +1,19 @@
-﻿import { removeRouteLine, removeDestinationMarker, setupRouting } from "../route.js";
+﻿import {
+    removeRouteLine,
+    removeDestinationMarker,
+    setupRouting,
+    restoreRouteLine,
+    restoreDestinationMarker,
+} from "../route.js";
+import SessionCache from "../../utils/sessions.js";
 
 export default function createLocateControl({
-    startMarker,
     currentStartLatLng,
-    goodQualityMarkers
+    goodQualityMarkers,
 }) {
     const locateControl = L.control({ position: "topleft" });
 
-    locateControl.onAdd = function (map) {
+    locateControl.onAdd = function(map) {
         const button = L.DomUtil.create(
             "button",
             "leaflet-bar leaflet-control leaflet-control-custom"
@@ -23,19 +29,24 @@ export default function createLocateControl({
         button.onclick = () => {
             removeRouteLine(map);
             removeDestinationMarker(map);
-            if (startMarker) map.removeLayer(startMarker);
+            if (map._startMarker) map.removeLayer(map._startMarker);
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((pos) => {
                     const userLatLng = L.latLng(
                         pos.coords.latitude,
                         pos.coords.longitude
                     );
-                    L.marker(userLatLng)
+                    SessionCache.set("startLatLng", userLatLng);
+                    map._startMarker = L.marker(userLatLng)
                         .addTo(map)
                         .bindPopup("Twoja lokalizacja")
                         .openPopup();
                     map.setView(userLatLng, 10);
-                    setupRouting(map, () => currentStartLatLng, goodQualityMarkers);
+
+                    restoreRouteLine(map);
+                    restoreDestinationMarker(map);
+
+                    setupRouting(map, () => userLatLng, goodQualityMarkers);
                 });
             } else {
                 alert("Geolokalizacja niedostępna.");
