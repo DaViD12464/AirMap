@@ -42,7 +42,7 @@ topRightControl.onAdd = function (map) {
     const routeOptions = [
         { id: "shortest", label: "Najkrótsza ścieżka ", type: "radio", name: "route", checked: true },
         { id: "cleanest", label: "Najczytsza ścieżka ", type: "radio", name: "route", checked: false },
-        { id: "loopedRoute", label: "Zapętlenie trasy ", type: "checkbox", checked: true },
+        { id: "loopedRoute", label: "Zapętlenie trasy ", type: "checkbox", checked: false },
         { id: "rangeLimiter", label: "Ogranicznik odległości ", type: "range", min: 10, max: 1000, defaultValue: 100 },
         { id: "lengthLimiter", label: "Długość trasy (Km)", type: "range", min: 0, max: 1000, defaultValue: 100 }
     ];
@@ -237,6 +237,18 @@ topRightControl.onAdd = function (map) {
         // Tutaj można dodać logikę:
         // - Przeliczenie trasy (najkrótsza/najczytsza)
         // - Filtrowanie markerów sensorów według typu PM
+        applyButton.onclick = function(e) {
+            e.stopPropagation();
+
+        };
+
+        sensorTypes.forEach = (e => {
+            e.stopPropagation();
+            e.onclick = function(e) {
+                astar();
+            };
+        });
+
 
         dropdown.style.display = "none";
         button.style.backgroundColor = "#2c3e50";
@@ -249,11 +261,19 @@ topRightControl.onAdd = function (map) {
         routeOptions.forEach(option => {
             const radio = dropdown.querySelector(`#${option.id}`);
             radio.checked = option.id === "shortest";
-            const checkbox = dropdown.querySelector(`#${option.id}`); //?????? 
+            const checkbox = dropdown.querySelector(`#${option.id}`); 
             checkbox.checked = option.checked;
             const range = dropdown.querySelector(`#${option.id}`);
             range.value = option.defaultValue;
         });
+
+        const rangeLimiterInput = dropdown.querySelector("#rangeLimiter");
+        rangeLimiterInput.value = 100;
+        rangeLimiterInput.dispatchEvent(new Event("input"));
+
+        const lengthLimiterInput = dropdown.querySelector("#lengthLimiter");
+        lengthLimiterInput.value = 100;
+        lengthLimiterInput.dispatchEvent(new Event("input"));
 
         sensorTypes.forEach(sensor => {
             const checkbox = dropdown.querySelector(`#${sensor.id}`);
