@@ -163,7 +163,7 @@ public static class AirQualityHelper
                     L2.AppendLine($"PM10: {sensor.Pm10.Value} µg/m³");
                 if (sensor.Hcho.HasValue && sensor.Hcho != 0)
                     L2.AppendLine($"HcHo: {sensor.Hcho.Value} µg/m³");
-                L2.AppendLine("---------------------------------------------------");
+                L2.AppendLine("-------------------------------");
                 if (sensor.AveragePm1.HasValue)
                     L2.AppendLine($"Średnie PM1: {sensor.AveragePm1.Value} µg/m³");
                 if (sensor.AveragePm25.HasValue)
@@ -172,12 +172,12 @@ public static class AirQualityHelper
                     L2.AppendLine($"Średnie PM10: {sensor.AveragePm10.Value}  µg/m³");
                 if (sensor.AverageHcho.HasValue)
                     L2.AppendLine($"Średnie HCHO: {sensor.AverageHcho.Value}  µg/m³");
-                L2.AppendLine("---------------------------------------------------");
+                L2.AppendLine("-------------------------------");
                 if (sensor.Temperature.HasValue && sensor.Temperature != 0)  // workaround - will not show values if Temperature is 0°C !!! 
                     L2.AppendLine($"Temperatura: {sensor.Temperature.Value} °C");
                 if (sensor.Humidity.HasValue && sensor.Humidity != 0)
                     L2.AppendLine($"Wilgotność: {sensor.Humidity.Value} %");
-                L2.AppendLine("---------------------------------------------------");
+                L2.AppendLine("-------------------------------");
                 if (sensor.IjpString is not null)
                 {
                     L2.AppendLine("Wskaźnik jakości powietrza:");
@@ -185,9 +185,9 @@ public static class AirQualityHelper
                 }
                 if (sensor.IjpDescription is not null)
                 {
-                    L2.AppendLine("---------------------------------------------------");
+                    L2.AppendLine("-------------------------------");
                     L2.AppendLine($"{sensor.IjpDescription}");
-                    L2.AppendLine("---------------------------------------------------");
+                    L2.AppendLine("-------------------------------");
                 }
 
 
@@ -208,7 +208,7 @@ public static class AirQualityHelper
                     SC.AppendLine("Name: SensorCommunity_Sensor");
                 if (sensor.Location.Country != null && sensor.Timestamp != null)
                     SC.AppendLine($"{sensor.Location.Country} | {sensor.Timestamp}");
-                SC.AppendLine("---------------------------------------------------");
+                SC.AppendLine("-------------------------------");
                 if (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P0")).FirstOrDefault()?.Value != null)
                     SC.AppendLine($"PM1: {sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P0")).FirstOrDefault()?.Value.ToString()} µg/m³");
                 if (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P2")).FirstOrDefault()?.Value != null)
@@ -222,7 +222,7 @@ public static class AirQualityHelper
                     (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P2")).FirstOrDefault()?.Value == null) &&
                     (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("P4")).FirstOrDefault()?.Value == null))
                     SC.AppendLine("Brak danych z odczytów PM1 / PM2.5 / PM10 / PM4.");
-                SC.AppendLine("---------------------------------------------------");
+                SC.AppendLine("-------------------------------");
                 if (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("temperature")).FirstOrDefault()?.Value != null)
                     SC.AppendLine($"Temperatura: {sensor.SensorDataValues?.Where(x => x.ValueType.Equals("temperature")).FirstOrDefault()?.Value.ToString()} °C");
                 if (sensor.SensorDataValues?.Where(x => x.ValueType.Equals("humidity")).FirstOrDefault()?.Value != null)
@@ -235,7 +235,7 @@ public static class AirQualityHelper
                     sensor.SensorDataValues?.Where(x => x.ValueType.Equals("humidity")).FirstOrDefault()?.Value != null ||
                     sensor.SensorDataValues?.Where(x => x.ValueType.Equals("pressure_at_sealevel")).FirstOrDefault()?.Value != null || 
                     sensor.SensorDataValues?.Where(x => x.ValueType.Equals("noise_LAeq")).FirstOrDefault()?.Value != null) 
-                    SC.AppendLine("---------------------------------------------------");
+                    SC.AppendLine("-------------------------------");
                 return SC.ToString().Replace("\r\n", "<br/>");
             }
             else
