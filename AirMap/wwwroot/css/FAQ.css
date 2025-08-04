@@ -26,8 +26,11 @@ body {
 }
 
 .FAQelement {
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #b0e0e6;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
     padding: 10px 0;
+    padding-bottom: 0;
 }
 
 .FAQheader {
@@ -35,7 +38,7 @@ body {
     border: none;
     width: 100%;
     text-align: left;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     color: #b0e0e6;
     cursor: pointer;
     padding: 10px;
@@ -49,18 +52,24 @@ body {
 }
 
 .icon {
-    font-size: 1.5rem;
+    font-size: 2rem;
     color: #b0e0e6;
 }
 
 .FAQelementText {
-    padding: 10px;
-    font-size: 1rem;
-    color: #f0f0f0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
+    font-size: 16px;
+    color: #000000;
+    background-color: #b0e0e6;
+    border-radius: 8px;
+    padding: 0 10px; /* initially no vertical padding */
 }
 
-.FAQheader.active .icon {
-    content: "<i class='bx bx-up-arrow-alt bx-tada'></i>";
+.FAQelementText.open {
+    max-height: 300px; /* high enough for most content */
+    padding: 10px;
 }
 
 .hidden {
