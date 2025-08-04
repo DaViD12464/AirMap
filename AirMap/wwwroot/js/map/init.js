@@ -9,6 +9,9 @@ import {
 import SessionCache from "../utils/sessions.js";
 import createLocateControl from "./controls/locateControl.js";
 import topRightControl from "./controls/menu.js";
+import { aStar } from "./astar.js";
+import { haversineDistance } from "./distance.js";
+import { prepareMarkers } from "../utils/sensor.js";
 
 document.addEventListener("DOMContentLoaded",
     async function() {
@@ -44,50 +47,66 @@ document.addEventListener("DOMContentLoaded",
         ]);
 
         const icons = {
-            veryGoodAirQualityIcon: L.icon({iconUrl: "/AirQualityMarkers/VeryGoodAQ.png", iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
-            goodAirQualityIcon: L.icon({ iconUrl: "/AirQualityMarkers/GoodAQ.png", iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
-            moderateAirQualityIcon: L.icon({ iconUrl: "/AirQualityMarkers/ModerateAQ.png", iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
-            sufficientAirQualityIcon: L.icon({ iconUrl: "/AirQualityMarkers/SufficientAQ.png", iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
-            badAirQualityIcon: L.icon({ iconUrl: "/AirQualityMarkers/BadAQ.png", iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
-            veryBadAirQualityIcon: L.icon({ iconUrl: "/AirQualityMarkers/VeryBadAQ.png", iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
-            unknownAirQualityIcon: L.icon({ iconUrl: "/AirQualityMarkers/UnknownAQ.png", iconSize: [64, 64], iconAnchor: [32, 64], popupAnchor: [6, -48] }),
-            defaultGreen: L.icon({ iconUrl: "https://maps.gstatic.com/mapfiles/ms2/micons/green-dot.png", iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-            defaultBlue: L.icon({ iconUrl: "https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png", iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] })
+            veryGoodAirQualityIcon: L.icon({
+                iconUrl: "/AirQualityMarkers/VeryGoodAQ.png",
+                iconSize: [64, 64],
+                iconAnchor: [32, 64],
+                popupAnchor: [6, -48],
+            }),
+            goodAirQualityIcon: L.icon({
+                iconUrl: "/AirQualityMarkers/GoodAQ.png",
+                iconSize: [64, 64],
+                iconAnchor: [32, 64],
+                popupAnchor: [6, -48],
+            }),
+            moderateAirQualityIcon: L.icon({
+                iconUrl: "/AirQualityMarkers/ModerateAQ.png",
+                iconSize: [64, 64],
+                iconAnchor: [32, 64],
+                popupAnchor: [6, -48],
+            }),
+            sufficientAirQualityIcon: L.icon({
+                iconUrl: "/AirQualityMarkers/SufficientAQ.png",
+                iconSize: [64, 64],
+                iconAnchor: [32, 64],
+                popupAnchor: [6, -48],
+            }),
+            badAirQualityIcon: L.icon({
+                iconUrl: "/AirQualityMarkers/BadAQ.png",
+                iconSize: [64, 64],
+                iconAnchor: [32, 64],
+                popupAnchor: [6, -48],
+            }),
+            veryBadAirQualityIcon: L.icon({
+                iconUrl: "/AirQualityMarkers/VeryBadAQ.png",
+                iconSize: [64, 64],
+                iconAnchor: [32, 64],
+                popupAnchor: [6, -48],
+            }),
+            unknownAirQualityIcon: L.icon({
+                iconUrl: "/AirQualityMarkers/UnknownAQ.png",
+                iconSize: [64, 64],
+                iconAnchor: [32, 64],
+                popupAnchor: [6, -48],
+            }),
+            defaultGreen: L.icon({
+                iconUrl: "https://maps.gstatic.com/mapfiles/ms2/micons/green-dot.png",
+                iconSize: [32, 32],
+                iconAnchor: [16, 32],
+                popupAnchor: [0, -32],
+            }),
+            defaultBlue: L.icon({
+                iconUrl: "https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png",
+                iconSize: [32, 32],
+                iconAnchor: [16, 32],
+                popupAnchor: [0, -32],
+            }),
         };
 
-        const markers = L.markerClusterGroup();
+        let markers = L.markerClusterGroup();
         const goodQualityMarkers = [];
 
-        sensorData.forEach((sensor, index) => {
-            let latLng = null;
-            const popupText =
-                `SensorId: ${textValues[index].sensorId}<br/>${textValues[index].textResults || "Sensor"}`;
-            const iconName = iconNames[index].icon;
-            let icon = icons[iconName] || icons.defaultGreen;
-
-            if (sensor.latitude != null && sensor.longitude != null) {
-                latLng = L.latLng(sensor.latitude, sensor.longitude);
-            } else if (
-                sensor.location?.latitude != null &&
-                    sensor.location?.longitude != null
-            ) {
-                latLng = L.latLng(sensor.location.latitude, sensor.location.longitude);
-                icon = icons[iconName] || icons.defaultBlue;
-            }
-
-            if (latLng) {
-                const marker = L.marker(latLng, { icon }).bindPopup(popupText);
-                markers.addLayer(marker);
-
-                if (
-                    icon.options.iconUrl.includes("ModerateAQ.png") ||
-                        icon.options.iconUrl.includes("GoodAQ.png") ||
-                        icon.options.iconUrl.includes("VeryGoodAQ.png")
-                ) {
-                    goodQualityMarkers.push(latLng);
-                }
-            }
-        });
+        markers = prepareMarkers(sensorData, markers, goodQualityMarkers, textValues, iconNames, icons);
 
         map.addLayer(markers);
 
@@ -158,4 +177,53 @@ document.addEventListener("DOMContentLoaded",
         locateControl.addTo(map);
         topRightControl.addTo(map);
         setupRouting(map, getCurrentStartLatLng, goodQualityMarkers);
+
+        window._leafletMapInstance = map;
+        window._sensorData = sensorData;
+        window.aStar = aStar;
+        window.haversineDistance = haversineDistance;
+
+        window.onSensorFilterChanged = function() {
+            const filters = SessionCache.get("routeFilters") || {};
+            let activeSensors = filters.activeSensors;
+            if (
+                !activeSensors ||
+                    !Array.isArray(activeSensors) ||
+                    activeSensors.length === 0
+            ) {
+                activeSensors = [
+                    "pm1",
+                    "pm25",
+                    "pm10",
+                    "pm4",
+                    "HcHo",
+                    "unknownAirQuality",
+                ];
+            }
+
+            map.removeLayer(markers);
+            markers.clearLayers();
+            goodQualityMarkers.length = 0;
+            let visibleCount = 0;
+
+            markers = prepareMarkers(sensorData,
+                markers,
+                goodQualityMarkers,
+                textValues,
+                iconNames,
+                icons,
+                activeSensors);
+            visibleCount = markers._needsClustering.length;
+
+            map.addLayer(markers);
+            console.log(
+                "Widoczne sensory PM:",
+                activeSensors,
+                "Liczba markerów:",
+                visibleCount
+            );
+            if (typeof window.onRouteFiltersChanged === "function") {
+                window.onRouteFiltersChanged();
+            }
+        };
     });

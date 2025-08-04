@@ -1,5 +1,7 @@
-﻿const topRightControl = L.control({ position: "topright" });
-topRightControl.onAdd = function (map) {
+﻿import SessionCache from "../../utils/sessions.js";
+
+const topRightControl = L.control({ position: "topright" });
+topRightControl.onAdd = function(map) {
     const container = L.DomUtil.create("div", "leaflet-bar leaflet-control");
     container.id = "container";
 
@@ -40,11 +42,42 @@ topRightControl.onAdd = function (map) {
     header.style.fontSize = "15px";
 
     const routeOptions = [
-        { id: "shortest", label: "Najkrótsza ścieżka ", type: "radio", name: "route", checked: true },
-        { id: "cleanest", label: "Najczytsza ścieżka ", type: "radio", name: "route", checked: false },
-        { id: "loopedRoute", label: "Zapętlenie trasy ", type: "checkbox", checked: false },
-        { id: "rangeLimiter", label: "Ogranicznik odległości ", type: "range", min: 10, max: 1000, defaultValue: 100 },
-        { id: "lengthLimiter", label: "Długość trasy (Km)", type: "range", min: 0, max: 1000, defaultValue: 100 }
+        {
+            id: "shortest",
+            label: "Najkrótsza ścieżka ",
+            type: "radio",
+            name: "route",
+            checked: true,
+        },
+        {
+            id: "cleanest",
+            label: "Najczystsza ścieżka ",
+            type: "radio",
+            name: "route",
+            checked: false,
+        },
+        {
+            id: "loopedRoute",
+            label: "Zapętlenie trasy ",
+            type: "checkbox",
+            checked: false,
+        },
+        {
+            id: "rangeLimiter",
+            label: "Ogranicznik odległości ",
+            type: "range",
+            min: 10,
+            max: 1000,
+            defaultValue: 100,
+        },
+        {
+            id: "lengthLimiter",
+            label: "Długość trasy (Km)",
+            type: "range",
+            min: 0,
+            max: 1000,
+            defaultValue: 100,
+        },
     ];
 
     const sensorTypes = [
@@ -53,7 +86,12 @@ topRightControl.onAdd = function (map) {
         { id: "pm10", label: "PM10", type: "checkbox", checked: true },
         { id: "pm4", label: "PM4", type: "checkbox", checked: true },
         { id: "HcHo", label: "HcHo", type: "checkbox", checked: true },
-        { id: "unknownAirQuality", label: "unknownAirQuality", type: "checkbox", checked: true }
+        {
+            id: "unknownAirQuality",
+            label: "unknownAirQuality",
+            type: "checkbox",
+            checked: true,
+        },
     ];
 
     const checkList = L.DomUtil.create("div");
@@ -68,7 +106,7 @@ topRightControl.onAdd = function (map) {
     routeTitle.style.color = "#FFFAFA";
     routeSection.appendChild(routeTitle);
 
-    routeOptions.forEach(option => {
+    routeOptions.forEach((option) => {
         const optionContainer = L.DomUtil.create("div");
         optionContainer.style.marginBottom = "5px";
         optionContainer.style.display = "flex";
@@ -91,8 +129,11 @@ topRightControl.onAdd = function (map) {
             valueDisplay.style.fontSize = "12px";
             valueDisplay.style.color = "white";
 
-            input.oninput = function () {
+            input.oninput = function() {
                 valueDisplay.innerHTML = input.value;
+                console.log(
+                    `Zmieniono filtr: ${option.label} na wartość: ${input.value}`
+                );
             };
 
             optionContainer.appendChild(input);
@@ -105,8 +146,14 @@ topRightControl.onAdd = function (map) {
             input.checked = option.checked;
             input.style.marginRight = "8px";
 
-            input.onchange = function () {
-                console.log(`Opcja trasy: ${option.label}`);
+            input.onchange = function() {
+                if (option.type === "radio" && input.checked) {
+                    console.log(`Wybrano filtr: ${option.label}`);
+                } else if (option.type === "checkbox") {
+                    console.log(
+                        `Filtr ${option.label} ${input.checked ? "włączony" : "wyłączony"}`
+                    );
+                }
             };
 
             optionContainer.appendChild(input);
@@ -128,11 +175,6 @@ topRightControl.onAdd = function (map) {
             optionContainer.insertBefore(rangeLabel, input);
         }
 
-        input.onchange = function () {
-            console.log(`Opcja trasy: ${option.label}`);
-        };
-
-        optionContainer.appendChild(input);
         routeSection.appendChild(optionContainer);
     });
 
@@ -147,7 +189,7 @@ topRightControl.onAdd = function (map) {
     sensorTitle.style.color = "#FFFAFA";
     sensorSection.appendChild(sensorTitle);
 
-    sensorTypes.forEach(sensor => {
+    sensorTypes.forEach((sensor) => {
         const sensorContainer = L.DomUtil.create("div");
         sensorContainer.style.marginBottom = "5px";
         sensorContainer.style.display = "flex";
@@ -159,15 +201,19 @@ topRightControl.onAdd = function (map) {
         checkbox.checked = sensor.checked;
         checkbox.style.marginRight = "8px";
 
+        checkbox.onchange = function() {
+            console.log(
+                `Sensor PM filtr: ${sensor.label} ${
+                checkbox.checked ? "włączony" : "wyłączony"
+                }`
+            );
+        };
+
         const label = L.DomUtil.create("label");
         label.htmlFor = sensor.id;
         label.innerHTML = sensor.label;
         label.style.cursor = "pointer";
         label.style.fontSize = "13px";
-
-        checkbox.onchange = function () {
-            console.log(`Sensor ${sensor.label}: ${this.checked}`);
-        };
 
         sensorContainer.appendChild(checkbox);
         sensorContainer.appendChild(label);
@@ -204,81 +250,95 @@ topRightControl.onAdd = function (map) {
     resetButton.style.cursor = "pointer";
     resetButton.style.fontSize = "12px";
 
-    applyButton.onclick = function (e) {
+    applyButton.onclick = function(e) {
         e.stopPropagation();
 
-        const selectedRoute = routeOptions.find(option => {
-            const radio = dropdown.querySelector(`#${option.id}`);
-            return radio.checked;
-        });
+        const prevFilters = SessionCache.get("routeFilters") || {};
+        const prevActiveSensors = prevFilters.activeSensors || [];
 
-        const activeSensors = [];
-        sensorTypes.forEach(sensor => {
-            const checkbox = dropdown.querySelector(`#${sensor.id}`);
-            if (checkbox.checked) {
-                activeSensors.push(sensor.label);
+        const selectedRoute =
+            routeOptions.find((option) => {
+                    if (option.type === "radio") {
+                        const radio = dropdown.querySelector(`#${option.id}`);
+                        return radio && radio.checked;
+                    }
+                    return false;
+                })?.id ||
+                "shortest";
+
+        const loopedRoute =
+            dropdown.querySelector("#loopedRoute")?.checked || false;
+        const rangeLimiter = dropdown.querySelector("#rangeLimiter")?.value || 100;
+        const lengthLimiter =
+            dropdown.querySelector("#lengthLimiter")?.value || 100;
+
+        const activeSensors = sensorTypes
+            .filter((sensor) => dropdown.querySelector(`#${sensor.id}`)?.checked)
+            .map((sensor) => sensor.id);
+
+        SessionCache.set("routeFilters",
+            {
+                selectedRoute,
+                loopedRoute,
+                rangeLimiter: Number(rangeLimiter),
+                lengthLimiter: Number(lengthLimiter),
+                activeSensors,
+            });
+
+        console.log("Wybrane filtry:",
+            {
+                selectedRoute,
+                loopedRoute,
+                rangeLimiter: Number(rangeLimiter),
+                lengthLimiter: Number(lengthLimiter),
+                activeSensors,
+            });
+
+        const sensorsChanged =
+            prevActiveSensors.length !== activeSensors.length ||
+                prevActiveSensors.some((s) => !activeSensors.includes(s));
+        if (sensorsChanged && typeof window.onSensorFilterChanged === "function") {
+            window.onSensorFilterChanged();
+        }
+
+        dropdown.style.display = "none";
+        button.style.backgroundColor = "2c3e50";
+        isOpen = false;
+
+        if (typeof window.onRouteFiltersChanged === "function") {
+            window.onRouteFiltersChanged();
+        }
+    };
+
+    resetButton.onclick = function(e) {
+        e.stopPropagation();
+
+        routeOptions.forEach((option) => {
+            const input = dropdown.querySelector(`#${option.id}`);
+            if (!input) return;
+            if (option.type === "radio") {
+                input.checked = option.id === "shortest";
+            } else if (option.type === "checkbox") {
+                input.checked = option.checked;
+            } else if (option.type === "range") {
+                input.value = option.defaultValue;
+                input.dispatchEvent(new Event("input"));
             }
         });
 
-        console.log("Wybrana opcja trasy:", selectedRoute?.label);
-        console.log("Aktywne sensory PM:", activeSensors);
-
-        const rangeLimiterInput = dropdown.querySelector("#rangeLimiter");
-        const rangeLimiterValue = rangeLimiterInput?.value;
-
-        const lengthLimiterInput = dropdown.querySelector("#lengthLimiter");
-        const lengthLimiterValue = lengthLimiterInput?.value;
-        
-
-        console.log("Ogranicznik odległości między sensorami: ", rangeLimiterValue);
-        console.log("Ogranicznik długości trasy:  ", lengthLimiterValue);
-
-
-        // Tutaj można dodać logikę:
-        // - Przeliczenie trasy (najkrótsza/najczytsza)
-        // - Filtrowanie markerów sensorów według typu PM
-        applyButton.onclick = function(e) {
-            e.stopPropagation();
-
-        };
-
-        sensorTypes.forEach = (e => {
-            e.stopPropagation();
-            e.onclick = function(e) {
-                astar();
-            };
-        });
-
-
-        dropdown.style.display = "none";
-        button.style.backgroundColor = "#2c3e50";
-        isOpen = false;
-    };
-
-    resetButton.onclick = function (e) {
-        e.stopPropagation();
-
-        routeOptions.forEach(option => {
-            const radio = dropdown.querySelector(`#${option.id}`);
-            radio.checked = option.id === "shortest";
-            const checkbox = dropdown.querySelector(`#${option.id}`); 
-            checkbox.checked = option.checked;
-            const range = dropdown.querySelector(`#${option.id}`);
-            range.value = option.defaultValue;
-        });
-
-        const rangeLimiterInput = dropdown.querySelector("#rangeLimiter");
-        rangeLimiterInput.value = 100;
-        rangeLimiterInput.dispatchEvent(new Event("input"));
-
-        const lengthLimiterInput = dropdown.querySelector("#lengthLimiter");
-        lengthLimiterInput.value = 100;
-        lengthLimiterInput.dispatchEvent(new Event("input"));
-
-        sensorTypes.forEach(sensor => {
+        sensorTypes.forEach((sensor) => {
             const checkbox = dropdown.querySelector(`#${sensor.id}`);
-            checkbox.checked = sensor.checked;
+            if (checkbox) checkbox.checked = sensor.checked;
         });
+
+        SessionCache.set("routeFilters",
+            {
+                selectedRoute: "shortest",
+                loopedRoute: false,
+                rangeLimiter: 100,
+                lengthLimiter: 100,
+                activeSensors: sensorTypes.map((s) => s.id),
+            });
 
         console.log("Filtry zostały zresetowane do wartości domyślnych");
     };
@@ -291,40 +351,33 @@ topRightControl.onAdd = function (map) {
     dropdown.appendChild(actionButtons);
 
     let isOpen = false;
-    button.onclick = function (e) {
+    button.onclick = function(e) {
         e.stopPropagation();
         isOpen = !isOpen;
         dropdown.style.display = isOpen ? "block" : "none";
-        button.style.backgroundColor = isOpen ?  "midnightblue" : "#2c3e50";
+        button.style.backgroundColor = isOpen ? "midnightblue" : "#2c3e50";
         button.style.color = "white";
     };
 
+    document.addEventListener("click",
+        function(e) {
+            if (!container.contains(e.target)) {
+                dropdown.style.display = "none";
+                button.style.backgroundColor = "#2c3e50";
+                isOpen = false;
+            }
+        });
 
-
-    document.addEventListener('click', function (e) {
-        e.stopPropagation();
-        if (!container.contains(e.target)) {
-            dropdown.style.display = "none";
-            button.style.backgroundColor = "#2c3e50";
-            isOpen = false;
-        }
-    });
-
-    dropdown.onclick = function (e) {
+    dropdown.onclick = function(e) {
         e.stopPropagation();
     };
 
-
     L.DomEvent.disableScrollPropagation(dropdown);
-    L.DomEvent.disableClickPropagation(container); 
+    L.DomEvent.disableClickPropagation(container);
     container.appendChild(button);
     container.appendChild(dropdown);
-    
 
     return container;
-
 };
-
-
 
 export default topRightControl;
