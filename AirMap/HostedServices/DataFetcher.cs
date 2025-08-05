@@ -92,17 +92,18 @@ public class AirQualityHostedService : IHostedService, IDisposable
 
     private async Task FetchAndSaveData(string url, string? apiKey)
     {
-        string requestUrl = url;
-        // If the API key needs to be included as a query parameter, use UriBuilder
-        // For demonstration, let's assume the API key should be added as "api_key" query parameter if required
-        if (!string.IsNullOrEmpty(apiKey) && url.Contains("api_key=") == false)
-        {
-            var uriBuilder = new UriBuilder(url);
-            var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
-            query["api_key"] = apiKey;
-            uriBuilder.Query = query.ToString();
-            requestUrl = uriBuilder.ToString();
-        }
+        var requestUrl = url + apiKey;
+        //string requestUrl = url;
+        //// If the API key needs to be included as a query parameter, use UriBuilder
+        //// For demonstration, let's assume the API key should be added as "api_key" query parameter if required
+        //if (!string.IsNullOrEmpty(apiKey) && url.Contains("api_key=") == false)
+        //{
+        //    var uriBuilder = new UriBuilder(url);
+        //    var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
+        //    query["api_key"] = apiKey;
+        //    uriBuilder.Query = query.ToString();
+        //    requestUrl = uriBuilder.ToString();
+        //}
         using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
         if (!string.IsNullOrEmpty(apiKey))
         {
