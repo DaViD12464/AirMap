@@ -1,0 +1,76 @@
+﻿@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
+
+* {
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+}
+
+.faq-section {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #4070f4;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.faq-section h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.FAQelement {
+    border-bottom: 1px solid #b0e0e6;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    padding: 10px 0;
+    padding-bottom: 0;
+}
+
+.FAQheader {
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-size: 1.5rem;
+    color: #b0e0e6;
+    cursor: pointer;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.FAQheader:focus{
+    outline: none;
+}
+
+.icon {
+    font-size: 2rem;
+    color: #b0e0e6;
+}
+
+.FAQelementText {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
+    font-size: 16px;
+    color: #000000;
+    background-color: #b0e0e6;
+    border-radius: 8px;
+    padding: 0 10px; /* initially no vertical padding */
+}
+
+.FAQelementText.open {
+    max-height: 300px; /* high enough for most content */
+    padding: 10px;
+}
+
+.hidden {
+    display: none;
+}

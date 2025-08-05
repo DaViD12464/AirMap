@@ -21,7 +21,7 @@
             {
                 // Wywołanie metody przetwarzającej dane
                 var controller = new DataService(_sensorControllerLogger);
-                await controller.ProcessSensorsData();
+                //await controller.ProcessSensorsData();
             }
             catch (Exception ex)
             {

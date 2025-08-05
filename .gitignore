@@ -366,3 +366,7 @@ appsettings.json
 appsettings.Development.json
 /AirMap/Data/api/sensors
 /AirMap/Data/output
+AirMap.sln.DotSettings 
+
+#Release files folder
+ServiceDependencies/

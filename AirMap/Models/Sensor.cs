@@ -1,31 +1,34 @@
-﻿namespace AirMap.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace AirMap.Models
 {
+    /// <summary>
+    ///     Instance of Sensor class values with preferred value-types.
+    /// </summary>
     public class Sensor
     {
-        // universal model for existing datasets
-        public string? Device { get; set; }
-        public string? PM1 { get; set; }
-        public string? PM25 { get; set; }
-        public string? PM10 { get; set; }
-        public string? Epoch { get; set; }
-        public string? Latitude { get; set; }
-        public string? Longitude { get; set; }
-        public string? IJP { get; set; }
-        public string? IJPStringEN { get; set; }
-        public string? IJPString { get; set; }
-        public string? IJPDescription { get; set; }
-        public string? IJPDescriptionEN { get; set; }
-        public string? Color { get; set; }
-        public string? Temperature { get; set; }
-        public string? Humidity { get; set; }
-        public string? AveragePM1 { get; set; }
-        public string? AveragePM25 { get; set; }
-        public string? AveragePM10 { get; set; }
-        public string? Name { get; set; }
-        public string? Indoor { get; set; }
-        public string? PreviousIJP { get; set; }
-        public string? HCHO { get; set; }
-        public string? AverageHCHO { get; set; }
-        public string? LocationName { get; set; }
+        /// <summary>
+        ///     Identity number of the sensor for auto ID within DB.
+        /// </summary>
+        [Key]
+        public long Id { get; set; }
+
+        /// <summary>
+        ///     Identity number of the sensor from source API.
+        /// </summary>
+        public long? SourceApiId { get; set; }
+
+        /// <summary>
+        ///     Pin used by the sensor.
+        /// </summary>
+        public int? Pin { get; set; }
+
+        /// <summary>
+        ///     SensorType table reference, used for sensor type data.
+        /// </summary>
+        public long? SensorTypeId { get; set; }
+        [ForeignKey("SensorTypeId")]
+        public SensorType? SensorType { get; set; }
     }
 }

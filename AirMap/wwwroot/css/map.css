@@ -1,0 +1,41 @@
+﻿/*
+     * These CSS rules affect the tooltips within maps with the custom-popup
+     * class. See the full CSS for all customizable options:
+     * https://github.com/mapbox/mapbox.js/blob/001754177f3985c0e6b4a26e3c869b0c66162c99/theme/style.css#L321-L366
+    */
+.custom-popup .leaflet-popup-content-wrapper {
+    background: #2c3e50;
+    color: #fff;
+    font-size: 16px;
+    line-height: 24px;
+    width: auto;
+    height: auto;
+    padding: 1px 1px 1px 1px;
+    box-sizing: border-box;
+}
+
+    .custom-popup .leaflet-popup-content-wrapper a {
+        color: rgba(255,255,255,0.5);
+    }
+
+.custom-popup .leaflet-popup-tip-container {
+    width: 30px;
+    height: 15px;
+
+}
+
+.custom-popup .leaflet-popup-tip {
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 15px solid #2c3e50;
+    background: #2c3e50;
+}
+
+#map {
+    width: 98vw;
+    height: 85vh;
+    position: fixed;
+    left: 0;
+    margin-left: 1vw;
+    margin-right: 1vw;
+}

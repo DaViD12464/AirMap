@@ -1,4 +1,6 @@
-﻿namespace AirMap.Data
+﻿using AirMap.Models;
+
+namespace AirMap.Data
 {
     using Microsoft.EntityFrameworkCore;
     using Newtonsoft.Json;
@@ -10,13 +12,13 @@
     using System;
     using System.ComponentModel.DataAnnotations.Schema;
     using System.ComponentModel.DataAnnotations;
-
-    public class AppDbContext : DbContext
+    public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
-        public DbSet<AirQualityReading> AirQualityReadings { get; set; } = null!;
-        public DbSet<Source1Model> Source1Models { get; set; } = null!;
-        public DbSet<Source2Model> Source2Models { get; set; } = null!;
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)       {    }
+        public DbSet<SensorModel> SensorModel { get; set; }
+        public DbSet<Location> Location { get; set; }
+        public DbSet<Sensor> Sensor { get; set; }
+        public DbSet<SensorType> SensorType { get; set; }
+        public DbSet<SensorDataValues> SensorDataValues { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -24,169 +26,119 @@
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<AirQualityReading>()
-                .Property(e => e.AveragePM1)
+            var entity = modelBuilder.Entity<SensorModel>();
+
+            entity.ToTable("SensorModel");
+
+            entity
+                .HasOne(l => l.Location)
+                .WithMany().HasForeignKey(l => l.LocationId);
+
+            entity.HasOne(s => s.Sensor).WithMany().HasForeignKey(s => s.SensorId);
+            entity.Property(x => x.SensorId)
+                .ValueGeneratedNever();
+
+            entity.HasMany(s => s.SensorDataValues)
+                .WithOne()
+                .HasForeignKey("SensorModelId")
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.SourceApiId).IsUnique();
+
+
+
+            entity.Property(e => e.Device)
+                .HasColumnType("varchar")
+                .HasMaxLength(50);
+
+            entity.Property(e => e.Pm1)
                 .HasColumnType("decimal(18, 2)");
 
-            modelBuilder.Entity<AirQualityReading>()
-                .Property(e => e.AveragePM10)
+            entity.Property(e => e.Pm25)
                 .HasColumnType("decimal(18, 2)");
 
-            modelBuilder.Entity<AirQualityReading>()
-                .Property(e => e.AveragePM25)
+            entity.Property(e => e.Pm10)
                 .HasColumnType("decimal(18, 2)");
 
-            modelBuilder.Entity<AirQualityReading>()
-                .Property(e => e.HCHO)
-                .HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Timestamp)
+                .HasColumnType("datetime");
 
-            modelBuilder.Entity<AirQualityReading>()
-                .Property(e => e.Humidity)
-                .HasColumnType("decimal(18, 2)");
-
-            modelBuilder.Entity<AirQualityReading>()
-                .Property(e => e.Latitude)
+            entity.Property(e => e.Latitude)
                 .HasColumnType("decimal(18, 8)");
 
-            modelBuilder.Entity<AirQualityReading>()
-                .Property(e => e.Longitude)
+            entity.Property(e => e.Longitude)
                 .HasColumnType("decimal(18, 8)");
 
-            modelBuilder.Entity<AirQualityReading>()
-                .Property(e => e.PM1)
-                .HasColumnType("decimal(18, 2)");
-
-            modelBuilder.Entity<AirQualityReading>()
-                .Property(e => e.PM10)
-                .HasColumnType("decimal(18, 2)");
-
-            modelBuilder.Entity<AirQualityReading>()
-                .Property(e => e.PM25)
-                .HasColumnType("decimal(18, 2)");
-
-            modelBuilder.Entity<AirQualityReading>()
-                .Property(e => e.Temperature)
-                .HasColumnType("decimal(18, 2)");
-
-            modelBuilder.Entity<Location>()
-                .Property(e => e.Altitude)
-                .HasColumnType("decimal(18, 2)");
-
-            modelBuilder.Entity<Location>()
-                .Property(e => e.Latitude)
+            entity.Property(e => e.Ijp)
                 .HasColumnType("decimal(18, 8)");
 
-            modelBuilder.Entity<Location>()
-                .Property(e => e.Longitude)
-                .HasColumnType("decimal(18, 8)");
+            entity.Property(e => e.IjpStringEn)
+                .HasColumnType("varchar")
+                .HasMaxLength(255);
 
-            modelBuilder.Entity<Source1Model>().HasKey(s => s.Id);
-            modelBuilder.Entity<Source1Model>().Property(p => p.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.IjpString)
+                .HasColumnType("varchar")
+                .HasMaxLength(255);
 
-            modelBuilder.Entity<Source1Model>().HasIndex(s => s.Device).IsUnique();
+            entity.Property(e => e.IjpDescription)
+                .HasColumnType("varchar")
+                .HasMaxLength(512);
 
-            modelBuilder.Entity<Source1Model>()
-                .Property(e => e.Lat)
-                .HasColumnType("decimal(18, 8)");
+            entity.Property(e => e.IjpDescriptionEn)
+                .HasColumnType("varchar")
+                .HasMaxLength(512);
 
-            modelBuilder.Entity<Source1Model>()
-                .Property(e => e.Lon)
-                .HasColumnType("decimal(18, 8)");
+            entity.Property(e => e.Color)
+                .HasColumnType("varchar")
+                .HasMaxLength(20);
+
+            entity.Property(e => e.Temperature)
+                .HasColumnType("decimal(18, 2)");
+
+            entity.Property(e => e.Humidity)
+                .HasColumnType("decimal(18, 2)");
+
+            entity.Property(e => e.AveragePm1)
+                .HasColumnType("decimal(18, 2)");
+
+            entity.Property(e => e.AveragePm25)
+                .HasColumnType("decimal(18, 2)");
+
+            entity.Property(e => e.AveragePm10)
+                .HasColumnType("decimal(18, 2)");
+
+            entity.Property(e => e.Name)
+                .HasColumnType("varchar")
+                .HasMaxLength(100);
+            
+            entity.Property(e=> e.Indoor)
+                .HasColumnType("bit");
+
+            entity.Property(e => e.PreviousIjp)
+                .HasColumnType("varchar")
+                .HasMaxLength(50);
+
+            entity.Property(e => e.Hcho)
+                .HasColumnType("decimal(18, 2)");
+
+            entity.Property(e => e.AverageHcho)
+                .HasColumnType("decimal(18, 2)");
+
+            entity.Property(e => e.LocationName)
+                .HasColumnType("varchar")
+                .HasMaxLength(50);
+                
+            entity.HasKey(s => s.Id);
+            entity.Property(p => p.Id).ValueGeneratedOnAdd();
+            //entity.Property(p => p.Id).ValueGeneratedOnAdd(); -- need value to be generated on add for LookO2 // not necessarily for SensorModel
+            entity.HasIndex(s => s.Id).IsUnique(); //ensure Id is unique
+            entity.HasIndex(s => s.Device).IsUnique(); //ensure Device is unique
+
+            entity.Property(e => e.SamplingRate)
+                .HasColumnType("decimal(18, 2)");
 
         }
     }
     
-    // Klasa reprezentująca dane w tabeli
-    public class AirQualityReading
-    {
-        [Key]
-        public long Id { get; set; }
-        public decimal? Latitude { get; set; }
-        public decimal? Longitude { get; set; }
-        public decimal? PM1 { get; set; }
-        public decimal? PM25 { get; set; }
-        public decimal? PM10 { get; set; }
-        public string? Name { get; set; }
-
-        [Column(TypeName = "bit")]  // Specify correct SQL type
-        public bool Indoor { get; set; }
-        public string? Timestamp { get; set; }
-        public decimal? Temperature { get; set; }
-        public decimal? Humidity { get; set; }
-        public decimal? HCHO { get; set; }
-        public decimal? AveragePM1 { get; set; }
-        public decimal? AveragePM25 { get; set; }
-        public decimal? AveragePM10 { get; set; }
-        public string? IJP { get; set; }
-        public string? IJPString { get; set; }
-        public string? IJPDescription { get; set; }
-        public string? Color { get; set; }
-    }
-
-
-    // Modele dla danych z dwóch źródeł (uproszczone)
-    public class Source1Model
-    {
-        public Source1Model()
-        {
-            Device = string.Empty; // Ensure Device is always initialized
-        }
-
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long Id { get; set; }
-        public string? Timestamp { get; set; }
-        public string Device { get; set; } = null!;
-        public string? PM1 { get; set; }
-        public string? PM25 { get; set; }
-        public string? PM10 { get; set; }
-        public string? Epoch { get; set; }
-        public decimal Lat { get; set; }
-        public decimal Lon { get; set; }
-        public string? Name { get; set; }
-        public string? Indoor { get; set; }
-        public string? Temperature { get; set; }
-        public string? Humidity { get; set; }
-        public string? HCHO { get; set; }
-        public string? AveragePM1 { get; set; }
-        public string? AveragePM25 { get; set; }
-        public string? AveragePM10 { get; set; }
-        public string? IJPString { get; set; }
-        public string? IJPDescription { get; set; }
-        public string? Color { get; set; }
-    }
-
-
-    public class Source2Model
-    {
-        public long Id { get; set; }
-        public string? Timestamp { get; set; }
-        public Location? Location { get; set; }
-        public List<SensorDataValue>? SensorDataValues { get; set; }
-
-        public decimal? GetSensorValue(string valueType)
-        {
-            var value = SensorDataValues?.FirstOrDefault(v => v.ValueType == valueType)?.Value;
-            if (decimal.TryParse(value, out var result)) return result; return null;
-
-        }
-    }
-
-    public class Location
-    {
-        public long Id { get; set; }
-        public decimal Latitude { get; set; }
-        public decimal Longitude { get; set; }
-        public decimal Altitude { get; set; }
-        public string? Country { get; set; }
-        public int Indoor { get; set; }
-    }
-
-    public class SensorDataValue
-    {
-        public long Id { get; set; }
-        public string? Value { get; set; }
-        public string? ValueType { get; set; }
-    }
 }
     
