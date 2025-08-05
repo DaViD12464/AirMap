@@ -64,7 +64,7 @@ namespace AirMap.Helpers
                 // SQL Server doesn't support NaN or Infinity
                 if (!valid || double.IsNaN(parsedValue) || double.IsInfinity(parsedValue)) parsedValue = 0.0;
 
-                Random rand = new Random();  // add usage of System.Random to generate random numbers
+                Random rand = Random.Shared;  // use thread-safe shared instance for random numbers
 
                 result.Add(new SensorDataValues
                 {
