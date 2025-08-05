@@ -10,6 +10,7 @@ on:
     branches:
       - main
 
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -28,5 +29,16 @@ jobs:
       - name: Build
         run: dotnet build ./AirMap.sln --configuration Release --no-restore
 
+      #Add tests here
+      #- name: Tests
+      #  run: dotnet test ./AirMap.sln --configuration Release --no-restore
+
       - name: Publish
-        run: dotnet publish ./AirMap.sln --configuration Release --no-build
+        run: dotnet publish ./AirMap.sln --configuration Release --no-build --output '${{ secrets.AZURE_WEBAPP_PACKAGE_PATH }}'
+
+      - name: Deploy
+        uses: azure/webapps-deploy@v2
+        with:
+            app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+            publish-profile:  ${{ secrets.AZURE_PUBLISH_PROFILE }}
+            package: "${{ secrets.AZURE_WEBAPP_PACKAGE_PATH }}"
