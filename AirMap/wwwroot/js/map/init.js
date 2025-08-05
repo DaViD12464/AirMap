@@ -13,8 +13,10 @@ import { aStar } from "./astar.js";
 import { haversineDistance } from "./distance.js";
 import { prepareMarkers } from "../utils/sensor.js";
 
+//TODO: add event listener to monitor if the mainFunction is loaded (when loaded - hide loading pop-up);
+
 document.addEventListener("DOMContentLoaded",
-    async function() {
+    async function mainFunction() {
         const map = L.map("map").setView([52.1143385, 19.4236714], 7);
         let currentStartLatLng = null;
 
@@ -103,10 +105,32 @@ document.addEventListener("DOMContentLoaded",
             }),
         };
 
+        const filters = {
+            selectedRoute: "shortest",
+            loopedRoute: false,
+            lengthLimiter: 100,
+            activeSensors: [
+                "pm1",
+                "pm25",
+                "pm10",
+                "pm4",
+                "HcHo",
+                "unknownAirQuality"
+            ]
+        };
+        SessionCache.set("routeFilters", filters);
+
         let markers = L.markerClusterGroup();
         const goodQualityMarkers = [];
+        const allMarkersLatLng = [];
 
-        markers = prepareMarkers(sensorData, markers, goodQualityMarkers, textValues, iconNames, icons);
+        markers = prepareMarkers(sensorData,
+            markers,
+            goodQualityMarkers,
+            allMarkersLatLng,
+            textValues,
+            iconNames,
+            icons);
 
         map.addLayer(markers);
 
@@ -136,7 +160,7 @@ document.addEventListener("DOMContentLoaded",
 
                     map.setView(userLatLng, 10);
 
-                    setupRouting(map, () => userLatLng, goodQualityMarkers);
+                    setupRouting(map, () => userLatLng, goodQualityMarkers, allMarkersLatLng);
                 },
                 (error) => {
                     console.error("Błąd uzyskiwania lokalizacji:", error);
@@ -165,7 +189,7 @@ document.addEventListener("DOMContentLoaded",
                         .bindPopup("Punkt startowy (Ctrl+klik)")
                         .openPopup();
 
-                    setupRouting(map, getCurrentStartLatLng, goodQualityMarkers);
+                    setupRouting(map, getCurrentStartLatLng, goodQualityMarkers, allMarkersLatLng);
                 }
             });
 
@@ -176,7 +200,7 @@ document.addEventListener("DOMContentLoaded",
 
         locateControl.addTo(map);
         topRightControl.addTo(map);
-        setupRouting(map, getCurrentStartLatLng, goodQualityMarkers);
+        setupRouting(map, getCurrentStartLatLng, goodQualityMarkers, allMarkersLatLng);
 
         window._leafletMapInstance = map;
         window._sensorData = sensorData;
@@ -185,21 +209,7 @@ document.addEventListener("DOMContentLoaded",
 
         window.onSensorFilterChanged = function() {
             const filters = SessionCache.get("routeFilters") || {};
-            let activeSensors = filters.activeSensors;
-            if (
-                !activeSensors ||
-                    !Array.isArray(activeSensors) ||
-                    activeSensors.length === 0
-            ) {
-                activeSensors = [
-                    "pm1",
-                    "pm25",
-                    "pm10",
-                    "pm4",
-                    "HcHo",
-                    "unknownAirQuality",
-                ];
-            }
+            const activeSensors = filters.activeSensors;
 
             map.removeLayer(markers);
             markers.clearLayers();
@@ -209,6 +219,7 @@ document.addEventListener("DOMContentLoaded",
             markers = prepareMarkers(sensorData,
                 markers,
                 goodQualityMarkers,
+                allMarkersLatLng,
                 textValues,
                 iconNames,
                 icons,

@@ -2,12 +2,32 @@
 
 import { haversineDistance } from "./distance.js";
 
-// Pomocnicza funkcja do generowania klucza
 function latLngKey(latlng) {
     return `${latlng.lat},${latlng.lng}`;
 }
 
-export function aStar(start, goal, nodes, maxDistanceKm = 100) {
+function airQualityBonus(latlng, goodMarkers, radiusMeters = 300) {
+    for (const marker of goodMarkers) {
+        const dist = latlng.distanceTo(marker);
+        if (dist <= radiusMeters) {
+            return -0.5;
+        }
+    }
+    return 0;
+}
+
+function airQualityPenalty(latlng, badMarkers, radiusMeters = 300) {
+    for (const marker of badMarkers) {
+        const dist = latlng.distanceTo(marker);
+        if (dist <= radiusMeters) {
+            return 10.0;
+        }
+    }
+    return 0;
+}
+
+
+export function aStar(start, goal, nodes, maxDistanceKm = 100, goodMarkers = [], prioritizeClean = false, badMarkers = []) {
     if (!start || !goal || !Array.isArray(nodes) || nodes.length === 0)
         return null;
 
@@ -46,7 +66,13 @@ export function aStar(start, goal, nodes, maxDistanceKm = 100) {
             if (tentativeG < gScore.get(neighborKey)) {
                 cameFrom.set(neighborKey, currentKey);
                 gScore.set(neighborKey, tentativeG);
-                fScore.set(neighborKey, tentativeG + haversineDistance(neighbor, goal));
+                let score = tentativeG + haversineDistance(neighbor, goal);
+                if (prioritizeClean) {
+                    score += airQualityBonus(neighbor, goodMarkers);
+                    score += airQualityPenalty(neighbor, badMarkers);
+                }
+                fScore.set(neighborKey, score);
+
                 if (!openSet.includes(neighborKey)) openSet.push(neighborKey);
             }
         }
