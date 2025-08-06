@@ -1,4 +1,4 @@
-name: Publish
+name: CI/CD
 
 on:
   workflow_dispatch:
@@ -7,41 +7,60 @@ on:
       - main
       - updates
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened]
     branches:
       - main
 
-
 jobs:
-  publish:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps: 
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with: 
           dotnet-version: '8.0.x'
 
-      - name: Restore
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
         run: dotnet restore ./AirMap.sln
 
       - name: Build
         run: dotnet build ./AirMap.sln --configuration Release --no-restore
 
-      #Add tests here
-      #- name: Tests
-      #  run: dotnet test ./AirMap.sln --configuration Release --no-restore
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with: 
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore ./AirMap.sln
 
       - name: Publish
-        if: github.ref == 'refs/heads/main'
-        run: dotnet publish ./AirMap.sln --configuration Release --no-build --output '${{ secrets.AZURE_WEBAPP_PACKAGE_PATH }}'
+        run: dotnet publish ./AirMap.sln --configuration Release --output './publish' --self-contained false --runtime linux-x64
 
-      - name: Deploy
-        if: github.ref == 'refs/heads/main'
-        uses: azure/webapps-deploy@v2
+      - name: Deploy to Azure
+        uses: azure/webapps-deploy@v3
         with:
-            app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-            publish-profile:  ${{ secrets.AZURE_PUBLISH_PROFILE }}
-            package: "${{ secrets.AZURE_WEBAPP_PACKAGE_PATH }}"
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          package: './publish'
