@@ -190,8 +190,7 @@ public static class AirQualityHelper
                     L2.AppendLine("-------------------------------");
                 }
 
-
-                return L2.ToString().Replace("\r\n", "<br/>");
+                return L2.ToString().Replace("\r\n", "\n").Replace("\n", "<br/>");
             }
 
             if (sensor.Location is { Latitude: not null, Longitude: not null }) //SC 
@@ -236,7 +235,8 @@ public static class AirQualityHelper
                     sensor.SensorDataValues?.Where(x => x.ValueType.Equals("pressure_at_sealevel")).FirstOrDefault()?.Value != null || 
                     sensor.SensorDataValues?.Where(x => x.ValueType.Equals("noise_LAeq")).FirstOrDefault()?.Value != null) 
                     SC.AppendLine("-------------------------------");
-                return SC.ToString().Replace("\r\n", "<br/>");
+
+                return SC.ToString().Replace("\r\n", "\n").Replace("\n", "<br/>");
             }
             else
             {
