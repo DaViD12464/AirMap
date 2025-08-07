@@ -1,0 +1,30 @@
+﻿<head>
+    <!-- Boxicons CSS-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css">
+    <!-- Cookies script-->
+    <link rel="stylesheet" href="~/css/cookies.css" asp-append-version="true" />
+    <script type="module" src="~/js/utils/cookies.js" asp-append-version="true" defer></script>
+</head>
+
+<body>
+
+    <!-- Cookie consent -->
+    <div class="cookies">
+        <header>
+            <i class="bx bx-cookie"></i>
+            <h2>Ciasteczka</h2>
+        </header>
+        <div class="data">
+            <p>
+                Ta strona używa plików cookies, aby zapewnić najlepsze wrażenia na naszej stronie.
+                <span class="tab"></span>
+                <a asp-area="" asp-controller="Home" asp-action="Cookies" target="_blank">Przeczytaj więcej...</a>
+            </p>
+        </div>
+        <div class="buttons">
+            <button class="button" id="acceptButton">Zgadzam się</button>
+            <button class="button">Odrzuć</button>
+        </div>
+    </div>
+
+</body>
