@@ -25,10 +25,10 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="menu-button">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">|&nbsp; Home &nbsp;|</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">|&nbsp; Strona Główna &nbsp;|</a>
                         </li>
                         <li class="menu-button">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">|&nbsp; Privacy &nbsp;|</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">|&nbsp; Polityka Prywatności &nbsp;|</a>
                         </li>
                         <li class="menu-button">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="FAQ">|&nbsp; FAQ &nbsp;|</a>
@@ -61,7 +61,9 @@
     
     
     <!--Include "Cookies" cshtml file.-->
-    @await Html.PartialAsync("cookiesWindow")
-
+    @await Html.PartialAsync("Components/cookiesWindow")
+    
+    <!--Include "guide" cshtml file.-->
+    @await Html.PartialAsync("Components/guide")
     </body>
 </html>
