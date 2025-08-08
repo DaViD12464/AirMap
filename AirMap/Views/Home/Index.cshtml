@@ -31,9 +31,15 @@
 </head>
 
 <body>
-<!-- Map container -->
-<div class='custom-popup' id='map'></div>
+<div id="main-content" style="position: relative;">
+    <!-- Map container -->
+    <div class='custom-popup' id='map'></div>
 
+    <div id="loading-overlay">
+        <!--Include "loading" cshtml file.-->
+        @await Html.PartialAsync("Components/loadingWindow")
+    </div>
+</div>
 
 <!--Include "guide" cshtml file.-->
 @await Html.PartialAsync("Components/guide")
