@@ -1,0 +1,96 @@
+﻿/* Fullscreen overlay */
+#loading-overlay {
+    position: fixed;
+    top: 0; /* same as map's top */
+    left: 0;
+    width: 100vw; /* same as map's width */
+    height: 100vh; /* same as map's height */
+    background-color: rgba(200,200,255,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+
+/* Circle in the middle */
+.loader-circle {
+    background: #0096db; 
+    border-radius: 50%;
+    width: 400px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Bouncing balls container */
+.bouncing-balls {
+    display: flex;
+    gap: 15px;
+}
+
+.bouncing-balls span {
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    display: inline-block;
+    animation: bounce 0.6s infinite alternate;
+}
+
+/* Delay for each ball for a wave effect */
+.bouncing-balls span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.bouncing-balls span:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.bouncing-balls span:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.bouncing-balls span:nth-child(4) {
+    animation-delay: 0.3s;
+}
+
+.bouncing-balls span:nth-child(5) {
+    animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-30px);
+    }
+}
+
+/* Loading text */
+.loader-circle h1 {
+    margin-top: 20px;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+/* Progress bar */
+.progress-bar {
+    margin-top: 15px;
+    width: 200px;
+    height: 15px;
+    background: white;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: black;
+    transition: width 0.2s ease;
+}
