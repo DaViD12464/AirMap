@@ -33,6 +33,10 @@
 <body>
 <!-- Map container -->
 <div class='custom-popup' id='map'></div>
+
+
+<!--Include "guide" cshtml file.-->
+@await Html.PartialAsync("Components/guide")
 </body>
 
 <script type="module" src="~/js/map/init.js"></script>
