@@ -9,7 +9,7 @@ body {
 }
 
 .faq-section {
-    max-width: 800px;
+    max-width: 100vw;
     margin: 50px auto;
     padding: 20px;
     background: #4070f4;
@@ -17,6 +17,13 @@ body {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.FAQmenu h1,
+.FAQmenu h3 {
+    margin-top: 30px;
+    padding: 10px 0;
+    color: #ffffff;
+    border-bottom: 1px solid #b0e0e6;
+}
 .faq-section h1 {
     text-align: center;
     font-size: 2rem;
@@ -25,7 +32,7 @@ body {
 }
 
 .FAQelement {
-    border-bottom: 1px solid #b0e0e6;
+    border-bottom: 2px solid #b0e0e6;
     border-bottom-right-radius: 8px;
     border-bottom-left-radius: 8px;
     padding: 10px 0;
@@ -40,7 +47,7 @@ body {
     font-size: 1.5rem;
     color: #b0e0e6;
     cursor: pointer;
-    padding: 10px;
+    padding: 10px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
