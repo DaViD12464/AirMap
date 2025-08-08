@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "Loading";
+}
+
+
+<head>
+    <!--Style import-->
+    <link rel="stylesheet" href="~/css/loadingWindow.css" asp-append-version="true"/>
+
+    <!--JS import-->
+    <script type="module" src="~/js/utils/loadingWindow.js" asp-append-version="true" defer></script>
+
+</head>
+
+
+<body>
+<div class="loader-wrapper">
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="loader-circle">
+            <div class="bouncing-balls">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span> <!-- You can use 3-5 balls -->
+            </div>
+            <h1>Ładowanie</h1>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>

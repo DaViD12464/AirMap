@@ -13,7 +13,8 @@ import { aStar } from "./astar.js";
 import { haversineDistance } from "./distance.js";
 import { prepareMarkers } from "../utils/sensor.js";
 
-//TODO: add event listener to monitor if the mainFunction is loaded (when loaded - hide loading pop-up);
+//import loading from loadingWindow.js
+import { updateProgress } from "../utils/loadingWindow.js"
 
 document.addEventListener("DOMContentLoaded",
     async function mainFunction() {
@@ -26,12 +27,18 @@ document.addEventListener("DOMContentLoaded",
                 attribution: "© OpenStreetMap",
             }).addTo(map);
 
+        updateProgress(); //map loaded - update step #1
+        /*console.log("Step#1 - updated progress.");*/
+
         const sensorData = await fetch("/api/sensor/GetAllSensorData")
             .then((res) => res.json())
             .catch((err) => {
                 console.error("Error loading sensor data:", err);
                 return [];
             });
+
+        updateProgress(); //sensor data fetched - update step #2
+        //console.log("Step#2 - updated progress.");
 
         const [iconNames, textValues] = await Promise.all([
             fetch("/api/sensor/GetIconDataBatch",
@@ -47,6 +54,11 @@ document.addEventListener("DOMContentLoaded",
                     body: JSON.stringify(sensorData),
                 }).then((r) => r.json()),
         ]);
+
+        updateProgress(); //Fetch icon batch in parallel - update step #3
+        //console.log("Step#3 - updated progress.");
+        updateProgress(); //Fetch popup data batch in parallel - update step #4
+        //console.log("Step#4 - updated progress.");
 
         const icons = {
             veryGoodAirQualityIcon: L.icon({
@@ -133,7 +145,8 @@ document.addEventListener("DOMContentLoaded",
             icons);
 
         map.addLayer(markers);
-
+        updateProgress(); //Add markers- update step #5
+        //console.log("Step#5 - updated progress.");
         function getCurrentStartLatLng() {
             const cached = SessionCache.get("startLatLng");
             return cached ? L.latLng(cached.lat, cached.lng) : null;
@@ -170,6 +183,9 @@ document.addEventListener("DOMContentLoaded",
             alert("Geolokalizacja niedostępna.");
         }
 
+        updateProgress(); //Set user location - update step #6
+        //console.log("Step#6 - updated progress.");
+
         SessionCache.remove("routeLine");
 
         restoreRouteLine(map);
@@ -199,7 +215,11 @@ document.addEventListener("DOMContentLoaded",
         });
 
         locateControl.addTo(map);
+        updateProgress(); //locateControl loaded - update step #7
+        //console.log("Step#7 - updated progress.");
         topRightControl.addTo(map);
+        updateProgress(); //topRightControl [menu] loaded - update step #8
+        //console.log("Step#8 - updated progress.");
         setupRouting(map, getCurrentStartLatLng, goodQualityMarkers, allMarkersLatLng);
 
         window._leafletMapInstance = map;
@@ -237,4 +257,7 @@ document.addEventListener("DOMContentLoaded",
                 window.onRouteFiltersChanged();
             }
         };
+
+
+        
     });
