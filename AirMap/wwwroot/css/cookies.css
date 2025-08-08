@@ -42,18 +42,19 @@ body {
     width: 100%;
 }
 
-header i {
-    color: #4070f4;
-    font-size: 32px;
-}
+    .cookies header i {
+        color: #4070f4;
+        font-size: 32px;
+    }
 
-header h2 {
-    color: #4070f4;
-    font-weight: 500;
-}
+    .cookies header h2 {
+        margin-top: 5px;
+        color: #4070f4;
+        font-weight: 500;
+    }
 
 .cookies .data {
-    margin-top: 16px;
+    margin-top: 5px;
 }
 .cookies .data p {
         color: #333;
