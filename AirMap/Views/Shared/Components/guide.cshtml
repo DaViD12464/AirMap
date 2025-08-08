@@ -1,0 +1,30 @@
+﻿<head>
+    <!-- Boxicons CSS-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css">
+    <!-- Cookies script-->
+    <link rel="stylesheet" href="~/css/guide.css" asp-append-version="true" />
+    <script type="module" src="~/js/utils/guide.js" asp-append-version="true" defer></script>
+</head>
+
+<body>
+
+<!-- Cookie consent -->
+<div class="guide">
+    <header>
+        <i class='bx bxs-book-bookmark'></i>
+        <h2>Poradnik</h2>
+    </header>
+    <div class="data">
+        <p>
+            Aby zapewnić jak najlepsze wrażenia przy korzystaniu ze strony zalecamy zapoznanie się z instrukcją dotyczącą korzystania z jej funkcjonalności.
+                <span class="tab"></span><span class="tab"></span>
+            <a asp-area="" asp-controller="Home" asp-action="FAQ" target="_blank">Przeczytaj więcej...</a>
+        </p>
+    </div>
+    <div class="buttons">
+            <button class="guidebutton" id="acceptButton">Pokaż instrukcje.</button>
+            <button class="guidebutton">Znam już działanie strony.</button>
+    </div>
+</div>
+
+</body>

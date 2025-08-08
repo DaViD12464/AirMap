@@ -1,0 +1,80 @@
+﻿@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+}
+
+.tab {
+    display: inline-block;
+    width: 1em;
+}
+
+
+.guide {
+    position: fixed;
+    right: -870px;
+    max-width: 500px;
+    width: 100%;
+    background: #87cefa;
+    border-radius: 8px;
+    padding: 15px 25px 22px;
+    transition: right 0.3s ease;
+    z-index: 9999;
+    height: fit-content;
+    color: #ffffff;
+}
+
+    .guide header {
+        justify-content: center;
+        display: flex;
+        align-items: center;
+        column-gap: 15px;
+        background: none;
+        max-width: inherit;
+        width: 100%;
+    }
+.guide header h2 {
+    margin-top: 10px;
+    color: #4070f4;
+    font-weight: 500;
+}
+.guide header i {
+    color: #4070f4;
+    font-size: 32px;
+}
+
+.guide.show {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.guide .buttons {
+    margin-top: 16px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.buttons .guidebutton {
+    border: none;
+    color: #fff;
+    padding: 8px 0;
+    border-radius: 4px;
+    background: #4070f4;
+    cursor: pointer;
+    width: calc(100% / 2 - 10px);
+    transition: all 0.2s ease;
+}
+
+    .buttons .guidebutton:hover {
+        background: #034bf1;
+    }
