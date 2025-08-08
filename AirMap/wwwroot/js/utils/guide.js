@@ -19,7 +19,7 @@ const addGuideCookie = () => {
                 document.cookie = "guideAccepted = AirMap_guide; " + expires + ";path=/";
 
                 // Redirect to FAQ page with hash or query
-                window.location.href = "/HOME/FAQ#guide";
+                window.location.href = "/HOME/FAQ?open=guide,guideMenu";
             }
             else { //add a cookie when cookies are rejected to stop guide box from showing again for 1 year
                 console.log("Guide known & rejected");
