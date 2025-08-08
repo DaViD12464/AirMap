@@ -76,6 +76,7 @@
     margin-top: 20px;
     color: white;
     font-family: Arial, sans-serif;
+    font-size: 36px;
 }
 
 /* Progress bar */
@@ -94,3 +95,101 @@
     background: black;
     transition: width 0.2s ease;
 }
+
+@media (max-width: 1200px) {
+    .loader-circle {
+        width: 400px;
+        height: 400px;
+    }
+
+    .bouncing-balls { gap: 15px; }
+
+    .bouncing-balls span {
+        width: 20px;
+        height: 20px;
+    }
+
+    @keyframes bounce {
+        from { transform: translateY(0); }
+
+        to { transform: translateY(-30px); }
+    }
+
+    .loader-circle h1 {
+        margin-top: 20px;
+        font-size: 36px;
+    }
+
+    .progress-bar {
+        margin-top: 15px;
+        width: 200px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .loader-circle {
+        width: 300px;
+        height: 300px;
+    }
+    .bouncing-balls {
+        gap: 10px;
+    }
+    .bouncing-balls span {
+        width: 15px;
+        height: 15px;
+    }
+
+    @keyframes bounce {
+        from {
+            transform: translateY(0);
+        }
+
+        to {
+            transform: translateY(-20px);
+        }
+    }
+    .loader-circle h1 {
+        margin-top: 15px;
+        font-size: 24px;
+    }
+    .progress-bar {
+        margin-top: 10px;
+        width: 150px;
+    }
+}
+
+@media (max-width: 768px) {
+    .loader-circle {
+        width: 180px;
+        height: 180px;
+    }
+    .bouncing-balls {
+        gap: 10px;
+    }
+    .bouncing-balls span {
+        width: 10px;
+        height: 10px;
+    }
+
+    @keyframes bounce {
+        from {
+            transform: translateY(0);
+        }
+
+        to {
+            transform: translateY(-20px);
+        }
+    }
+    .bouncing-balls span:nth-child(n+5) {
+        display: none;
+    }
+    .loader-circle h1 {
+        margin-top: 10px;
+        font-size: 18px;
+    }
+    .progress-bar {
+        margin-top: 10px;
+        width: 140px;
+    }
+}
+

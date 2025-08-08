@@ -21,19 +21,23 @@ body {
     display: inline-block;
     flex-direction: column;
 }
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+
+.navbar-toggler {
+    margin-right: 30px;
+    background: #567cc2;
+    color: #fff;
 }
 
-.logo img {
-    max-height: 120px;
-    border-radius: 80%;
-    transition: box-shadow 0.3s ease;
-    box-shadow: 0 0 0 2px transparent;
-    margin-right: 50px;
-}
+    .navbar-toggler:focus {
+        box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    }
+    .logo img {
+        max-height: 120px;
+        border-radius: 80%;
+        transition: box-shadow 0.3s ease;
+        box-shadow: 0 0 0 2px transparent;
+        margin-right: 50px;
+    }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
     box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
@@ -101,4 +105,68 @@ footer {
 .wide-container {
     padding-top: 140px;
     max-width: 3000px !important;
+}
+
+@media (max-width: 1200px) {
+    .logo img {
+        max-height: 100px;
+        width: 100px;
+    }
+
+    #footerText {
+        font-size: 12px;
+    }
+
+    html {
+        font-size: 16px;
+    }
+    .menu-button {
+        font-size: 1em;
+    }
+    .menu-button:hover {
+        font-size: 1.05em; 
+    }
+}
+@media (max-width: 1024px) {
+    .logo img {
+        max-height: 100px;
+        width: 100px;
+    }
+
+    #footerText {
+        font-size: 12px;
+    }
+
+    html {
+        font-size: 16px;
+    }
+    .menu-button {
+        font-size: 0.75em;
+    }
+
+    .menu-button:hover {
+        font-size: 0.8em;
+    }
+}
+
+@media (max-width: 768px) {
+    .logo img {
+        max-height: 80px;
+        width: 80px;
+    }
+
+    #footerText {
+        font-size: 8px;
+    }
+
+    html {
+        font-size: 12px;
+    }
+    .menu-button {
+        font-size: 0.7em;
+    }
+
+    .menu-button:hover {
+        font-size: 0.75em;
+    }
 }
