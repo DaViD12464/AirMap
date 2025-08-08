@@ -39,3 +39,33 @@ function toggleArrows(icon) {
     up.classList.toggle('hidden');
     up.classList.toggle('active');
 }
+
+window.addEventListener("DOMContentLoaded", () => {
+    if (window.location.hash === "#guide") {
+        const guideElement = document.getElementById("guide");
+        if (guideElement) {
+            // Expand text section
+            const textSection = guideElement.querySelector(".FAQelementText");
+            if (textSection) {
+                textSection.classList.remove("hidden");
+                textSection.style.transition = "";
+                requestAnimationFrame(() => {
+                    textSection.classList.add("open");
+                });
+            }
+            // Swap icons
+            const downArrow = guideElement.querySelector(".down-arrow");
+            const upArrow = guideElement.querySelector(".up-arrow");
+            if (downArrow && upArrow) {
+                downArrow.classList.add("hidden");
+                downArrow.classList.remove("active");
+
+                upArrow.classList.remove("hidden");
+                upArrow.classList.add("active");
+            }
+            // Scroll into view
+            guideElement.scrollIntoView({ behavior: "smooth" });
+        }
+    }
+});
+
