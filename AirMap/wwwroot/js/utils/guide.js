@@ -1,8 +1,11 @@
-﻿const guideBox = document.querySelector(".guide"),
+﻿
+export function addGuideCookie() {
+
+const guideBox = document.querySelector(".guide"),
     guidebuttons = document.querySelectorAll(".guidebutton");
 
-const addGuideCookie = () => {
     if (document.cookie.includes("AirMap_guide")) return;
+    if (!guideBox) return;
     guideBox.classList.add("show");
 
     guidebuttons.forEach(button => {
@@ -31,6 +34,4 @@ const addGuideCookie = () => {
             }
         });
     });
-};
-
-window.addEventListener("load", addGuideCookie);
+}
