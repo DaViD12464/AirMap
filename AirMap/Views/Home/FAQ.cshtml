@@ -32,8 +32,29 @@
                 </span>
             </button>
             <div class="FAQelementText hidden">
-                <p>
-                    Abcdefg
+                <p class ="faq-text">
+                    Aplikacja obecnie oferuje dwa sposoby wyznaczania trasy.
+                </p>
+                    <ul>
+                        <li><b>Od obecnej lokalizacji użytkownika</b></li>
+                        <p class ="faq-text">
+                            W celu wyznaczenia trasy od obecnej lokalizacji użytkownika należy w wybranym punkcie na mapie nacisnąć Prawy Przycisk Myszy (PPM).<br/>
+                            Po wybraniu punktu docelowego aplikacja automatycznie wyznaczy trasę w zależności od wybranych filtrów w menu użytkownika.<br/>
+                            Aby zastosować filtry użytkownika należy otworzyć menu znajdujące się w prawym górnym rogu mapy, zaznaczyć wybór filrów oraz nacisnąć przycisk "Zastosuj".<br/>
+                            Jeśli zastosowano wcześniej wyznaczanie trasy za pomocą niestandardowego punktu startowego, należy nacisnąć przycisk w lewym górnym rogu mapy, który umieści pinezkę startową w obecnej lokalizacji użytkownika. <br />
+                            
+                            <b>Urządzenia mobilne:</b><br />
+                            Wyznaczanie trasy na urządzeniach mobilnych odbywa się w podobny sposób do laptopów i komputerów stacjonarnych.<br />
+                            W celu wyboru punktu docelowego należy w wybranym miejscu na mapie nacisnąć i przytrzymać - spowoduje to umieszczenie punktu docelowego i wyznaczenie trasy.
+                        </p>
+                        <li><b>Z niestandardowym punktem startowym</b></li>
+                        <p class ="faq-text">
+                            Wyznaczenie trasy z niestandardowym punktem startowym odbywa się przez przytrzymanie przycisku "ctrl" na klawiaturze i naciśnięciu lewego przycisku myszy w wybranym miejscu na mapie (LPM). <br/>
+                            Spowoduje to ustawienie niestandardowego punktu startowego w tamtym miejscu, i pozwoli na wybór punktu docelowego poprzez naciśnięcie prawego przycisku myszy w wybranym miejscu docelowym.
+                        </p>
+                    </ul>
+                <p class="textWarning">
+                        <b>Obecnie aplikacja AirMap na urządzeniach mobilnych nie obsługuje wyznaczania trasy z niestandardowym punktem startowym.</b>
                 </p>
             </div>
         </div>
@@ -51,8 +72,51 @@
                 </span>
             </button>
             <div class="FAQelementText hidden">
-                <p>
-                    Abcdefg
+                <p class="faq-text">
+                    Menu użytkownika znajduje się pod niestandardowymi przyciskami na mapie. <br/>
+                    <ul>
+                        <b>Przycisk w lewym górnym rogu.</b><br/>
+                        <p class="faq-text">
+                            Przycisk lokalizacji - służy do wyznaczenia i wycentrowania mapy w miejscu aktualnej lokalizacji użytkownika.
+                        </p>
+                        <b>Przycisk w prawym górnym rogu.</b><br/>
+                        <p class="faq-text">
+                            Przycisk "Filtry" służy do otworzenia pełnego menu użytkownika oferującego zaawansowane opcje filtrowania danych na mapie i właściwości wyznaczania trasy. <br/>
+                        </p>
+                    </ul>
+                        <b>Opcje wyznaczania trasy w menu "Filtry":</b>
+                    <ul>
+                        <li><b>Najkrótsza ścieżka</b></li>
+                        <p class ="faq-text">
+                            Wyznaczenie trasy przy użyciu tego filtra powoduje wyznaczenie trasy po najkrótszej możliwej ścieżce, nie uwzględniając jakości powietrza na trasie. <br/>
+                        </p>
+                        <li><b>Najczystsza ścieżka</b></li>
+                        <p class="faq-text">
+                            Wyznaczenie trasy przy użyciu tego filtra powoduje wyznaczenie trasy po trasie z możliwie jak najlepszą jakością powietrza w pobliżu.<br />
+                            Może to spowodować wyznaczenie dłuższej trasy, ale zapewni wyznaczenie trasy omijającej obszary w pobliżu czujników posiadających złe odczyty jakości PM1, PM2.5, PM10 oraz PM4.<br/>
+                        </p>
+                        <li><b>Zapętlenie trasy</b></li>
+                        <p class="faq-text">
+                            Ten filtr wymaga wybrania punktu docelowego, który zostanie uznany za punkt docelowy do którego użytkownik chce dotrzeć podczas swojej trasy, następnie aplikacja wyznaczy inną trasę powrotną do punktu początkowego.<br/>
+                        </p>
+                        <li><b>Ogranicznik odległości</b></li>
+                        <p class="faq-text">
+                            Ta opcja pozwala użytkownikowi na ograniczenie odległości pomiędzy sensorami (w celu zwiększenia precyzji trasy znajdującej się w obszarach z dobrymi odczytami). <br/>
+                            Zwiększenie tego zakresu umożliwi wyznaczanie dłuższych tras na obszarach posiadających małe ilości stacji pomiarowych. <br/>
+                        </p>
+                        <li><b>Długość trasy (Km)</b></li>
+                        <p class="faq-text">
+                                Ta opcja umożliwia użytkownikowi ustawienie całkowitej długości trasy - domyślnie trasa ograniczona jest do maksymalnej długości 100Km.<br />
+                        </p> <br/>
+                        <li><b>Filtry Sensorów</b></li>
+                        <p class="faq-text">
+                            Filtry sensorów umożliwiają użytkownikowi na filtrowanie znaczników wyświetlanych na mapie, po wyborze sensorów mapa zostanie zaktualizowana i będzie pokazywać jedynie czujniki posiadające wybrane wartości. <br/>
+                            Odznaczenie którejś z opcji spowoduje ukrycie sensorów posiadających odczyty dla danej wartości. <br/>
+                            <b>Jeśli sensor posiada inną wartość, która pozostaje zaznaczona - jego znacznik na mapie będzie nadal wyświetlany!</b>
+                        </p>
+                    </ul>
+
+                    
                 </p>
             </div>
         </div>
@@ -60,7 +124,7 @@
         <h3>Często zadawane pytania</h3>
         <div class="FAQelement"> <!--3rd element-->
             <button class="FAQheader">
-                Skąd AirMap pozyskuje dane dotyczące jakości powietrza?
+                <p>Skąd AirMap pozyskuje dane dotyczące jakości powietrza?</p>
                 <span class="icon">
                     <!-- Down Arrow -->
                     <i class="bx bx-down-arrow-alt bx-tada down-arrow active"></i>
@@ -70,11 +134,60 @@
                 </span>
             </button>
             <div class="FAQelementText hidden">
-                <p>
-                    Abcdefg
+                <p class="faq-text">
+                    Aplikacja AirMap korzysta z danych udostępnionych przez producentów i dystrybutorów czujników pomiarowych.
+                </p>
+                <div class="logos-container">
+                    <div class="Element">
+                        <a href="https://looko2.pl" target="_blank">
+                            <img src="~/images/DataSources/Looko2.png" alt="LookO2" />
+                        </a>
+                    </div>
+                    <div class="Element">
+                        <a href="https://sensor.community/pl" target="_blank">
+                            <img src="~/images/DataSources/SensorCommunity.png" alt="SensorCommunity" />
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="FAQelement">
+            <button class="FAQheader">
+                <p> Czym są sensory z ikoną ze znakiem zapytania? </p>
+                <span class="icon">
+                    <i class="bx bx-down-arrow-alt bx-tada down-arrow active"></i>
+     
+                    <i class="bx bx-up-arrow-alt bx-tada up-arrow hidden"></i>
+                </span>
+            </button>
+            <div class="FAQelementText hidden">
+                <p class="faq-text">
+                    Są to sensory nie posiadające wartości dla odczytów PM1, PM2.5, PM10, PM4 lub HcHo. <br/>
+                    Posiadają one za to odczyty dotyczące innych danych, jak temperatura, głośność, wilgotność powietrza lub ciśnienie. <br/>
+                    Z tych powodów te punkty pomiarowe nie są brane pod uwagę podczas wyznaczania trasy, ale znajdują się na mapie z powodu posiadania pewnych odczytów i informacji. <br/>
                 </p>
             </div>
         </div>
+
+        <!-- FAQ ELEMENT TEMPLATE
+        <div class="FAQelement"> 
+            <button class="FAQheader">
+                <p> [HEADER TEXT] </p>
+                <span class="icon">
+                    <i class="bx bx-down-arrow-alt bx-tada down-arrow active"></i>
+
+                    <i class="bx bx-up-arrow-alt bx-tada up-arrow hidden"></i>
+                </span>
+            </button>
+            <div class="FAQelementText hidden">
+                <p class="faq-text">
+                    [FAQ ELEMENT TEXT]
+                </p>
+            </div>
+        </div>
+        -->
 
     </div>
 </section>
