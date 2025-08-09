@@ -47,14 +47,14 @@ topRightControl.onAdd = function(map) {
             label: "Najkrótsza ścieżka ",
             type: "radio",
             name: "route",
-            checked: true,
+            checked: false,
         },
         {
             id: "cleanest",
             label: "Najczystsza ścieżka ",
             type: "radio",
             name: "route",
-            checked: false,
+            checked: true,
         },
         {
             id: "loopedRoute",
@@ -264,7 +264,7 @@ topRightControl.onAdd = function(map) {
                     }
                     return false;
                 })?.id ||
-                "shortest";
+                "cleanest";
 
         const loopedRoute =
             dropdown.querySelector("#loopedRoute")?.checked || false;
@@ -317,7 +317,7 @@ topRightControl.onAdd = function(map) {
             const input = dropdown.querySelector(`#${option.id}`);
             if (!input) return;
             if (option.type === "radio") {
-                input.checked = option.id === "shortest";
+                input.checked = option.id === "cleanest";
             } else if (option.type === "checkbox") {
                 input.checked = option.checked;
             } else if (option.type === "range") {
@@ -333,7 +333,7 @@ topRightControl.onAdd = function(map) {
 
         SessionCache.set("routeFilters",
             {
-                selectedRoute: "shortest",
+                selectedRoute: "cleanest",
                 loopedRoute: false,
                 rangeLimiter: 100,
                 lengthLimiter: 100,
