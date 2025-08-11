@@ -1,0 +1,76 @@
+﻿@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+.TOStextFieldBackground {
+    max-width: 100vw;
+    max-height: 100vh;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: #4070f4;
+    color: #fff;
+    padding: 20px 40px 20px 40px;
+    border-radius: 60px;
+}
+
+.TOStextFieldBackground h1 {
+        color: #b0e0e6;
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 36px;
+    }
+
+    .TOStextFieldBackground h2 {
+        color: #b0e0e6;
+        text-align: left;
+        margin-bottom: 10px;
+        font-size: 24px;
+    }
+
+    .TOStextFieldBackground h3 {
+        color: #b0e0e6;
+        text-align: left;
+        margin-bottom: 10px;
+        margin-top: 20px;
+        margin-left: 5px;
+    }
+
+.TOStextFieldBackground li {
+        color: #ffffff;
+        font-size: 16px;
+    }
+    .TOStextFieldBackground p {
+        color: #ffffff;
+        font-size: 16px;
+        margin-left: 10px;
+    }
+
+    .kontakt a {
+        text-decoration: none;
+        color: #ffffff;
+    }
+    .kontakt a:hover {
+        text-decoration: none !important;
+        color: #29c81c;
+    }
+
+.providerHref {
+    text-decoration: none;
+    color: red;
+}
+
+.providerHref:hover {
+    text-decoration: none !important;
+    color: #29c81c;
+}
+
+.tab {
+    display: inline-block;
+    width: 1em;
+}
