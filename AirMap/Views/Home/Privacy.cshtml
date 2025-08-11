@@ -1,6 +1,81 @@
-﻿@{
-    ViewData["Title"] = "Privacy Policy";
-}
-<h1>@ViewData["Title"]</h1>
+﻿@using AirMap.Controllers
+@using Microsoft.Extensions.Options
+@inject IOptions<SocialMediaLinks> SocialMediaLinks
 
-<p>Use this page to detail your site's privacy policy.</p>
+@{
+    ViewData["Title"] = "Polityka Prywatności";
+}
+
+@* <p>Use this page to detail your site's privacy policy.</p> *@
+
+<head>
+    <!--Style import-->
+    <link rel="stylesheet" href="~/css/TOSprivacy.css" asp-append-version="true" />
+</head>
+
+<body>
+
+    <div class="TOStextFieldBackground">
+        <h1 id="polityka-title">Polityka Prywatności aplikacji AirMap</h1>
+
+        <p class="small">Niniejsza Polityka Prywatności wyjaśnia zasady dotyczące danych i prywatności związane z korzystaniem z Aplikacji AirMap.</p>
+
+        <h3>1. Administrator</h3>
+        <p>Administratorem Aplikacji jest <strong>Administrator aplikacji AirMap</strong>. Kontakt możliwy jest przez link do profilu LinkedIn umieszczony w Aplikacji.</p>
+
+        <h3>2. Brak gromadzenia danych osobowych</h3>
+        <ol>
+            <li>Aplikacja nie gromadzi, nie przechowuje ani nie przetwarza danych osobowych użytkowników w rozumieniu przepisów o ochronie danych osobowych (np. RODO).</li>
+            <li>Brak rejestracji i logowania oznacza, że Aplikacja nie tworzy kont użytkowników ani nie przechowuje informacji identyfikujących poszczególne osoby.</li>
+        </ol>
+
+        <h3>3. Geolokalizacja</h3>
+        <ol>
+            <li>Aplikacja może korzystać z bieżącej lokalizacji urządzenia użytkownika wyłącznie w celu poprawnego działania funkcji mapy i wyznaczania trasy.</li>
+            <li>Informacje o lokalizacji są wykorzystywane lokalnie w przeglądarce użytkownika i nie są przesyłane ani zapisywane na serwerach Administratora przez Aplikację.</li>
+            <li>W każdej chwili użytkownik może zrezygnować z udostępnienia lokalizacji, korzystając z ustawień swojej przeglądarki lub urządzenia.</li>
+        </ol>
+
+        <h3>4. Pliki cookies</h3>
+        <ol>
+            <li>Aplikacja wykorzystuje pliki cookies wyłącznie w zakresie niezbędnym do jej działania, m.in. do:</li>
+            <ul>
+                <li>zapamiętania wyboru użytkownika dotyczącego akceptacji/odrzucenia cookies,</li>
+                <li>zapamiętania wyboru użytkownika dotyczącego wyświetlania poradnika obsługi Aplikacji.</li>
+            </ul>
+            <li>Użytkownik może w każdej chwili usunąć lub zablokować pliki cookies w ustawieniach przeglądarki. Szczegóły techniczne dostępne są w dokumentacji przeglądarki.</li>
+        </ol>
+
+        <h3>5. Technologie i dostawcy zewnętrzni</h3>
+        <ol>
+            <li>
+                Aplikacja korzysta z następujących rozwiązań zewnętrznych:
+                <ul>
+                    <li>OpenStreetMap — dostawca danych mapowych,</li>
+                    <li>Leaflet — biblioteka JavaScript do wyświetlania map,</li>
+                    <li>API zewnętrznych dostawców danych dotyczących jakości powietrza.
+                        Dostawcami danych dotyczących jakości powietrza są:
+                        <a class="providerHref" href="https://looko2.pl" target="_blank" rel="noopener noreferrer">LookO2</a>
+                        oraz
+                        <a class="providerHref" href="https://sensor.community/pl" target="_blank" rel="noopener noreferrer">SensorCommunity</a>.
+                    </li>
+                </ul>
+            </li>
+            <li>Korzystanie z usług zewnętrznych może wiązać się z przetwarzaniem niektórych danych technicznych przez ich dostawców (np. adres IP). Administrator nie ma kontroli nad praktykami prywatności tych dostawców i zaleca zapoznanie się z ich politykami prywatności.</li>
+        </ol>
+
+        <h3>6. Bezpieczeństwo</h3>
+        <p class="small">Administrator dołożył uzasadnionych starań, aby zabezpieczyć Aplikację przed nieautoryzowanym dostępem oraz utratą danych technicznych. Ze względu na charakter Internetu nie można jednak wykluczyć ryzyka całkowitego bezpieczeństwa.</p>
+
+        <h3>7. Zmiany w Polityce Prywatności</h3>
+        <p class="small">Administrator może wprowadzać zmiany w Polityce Prywatności w przypadku zmiany funkcjonalności Aplikacji lub obowiązujących przepisów. Zmiany wchodzą w życie z dniem ich opublikowania w Aplikacji.</p>
+
+        <div class="kontakt">
+        <h2 id="kontakt-title">Kontakt</h2>
+        <p class="small">W sprawach związanych z Aplikacją AirMap prosimy o kontakt poprzez profil LinkedIn dostępny pod linkiem: <span class="tab"></span>
+            <strong><a href="@SocialMediaLinks.Value.Developer" target="_blank" rel="noopener noreferrer">Profil LinkedIn Administratora aplikacji AirMap</a></strong></p>
+    </div>
+</div>
+
+
+</body>

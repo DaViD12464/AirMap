@@ -40,3 +40,50 @@
     right: 1vw;
     bottom: 4vh;
 }
+
+@media (max-width: 1200px) {
+    #map {
+        width: 98vw;
+        height: 84vh;
+        position: fixed;
+        top: 12vh;
+        left: 1vw;
+        right: 1vw;
+        bottom: 4vh;
+    }
+}
+@media (max-width: 1024px) {
+    #map {
+        width: 98vw;
+        height: 84vh;
+        position: fixed;
+        top: 12vh;
+        left: 1vw;
+        right: 1vw;
+        bottom: 4vh;
+    }
+}
+
+@media (max-width: 768px) {
+    #map {
+        width: 98vw;
+        height: 84vh;
+        position: fixed;
+        top: 12vh;
+        left: 1vw;
+        right: 1vw;
+        bottom: 4vh;
+    }
+}
+
+@media (max-width: 480px) {
+    #map {
+        width: 98vw;
+        height: 84vh;
+        position: fixed;
+        top: 12vh;
+        left: 1vw;
+        right: 1vw;
+        bottom: 4vh;
+    }
+}

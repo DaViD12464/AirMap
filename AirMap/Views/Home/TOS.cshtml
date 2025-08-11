@@ -1,0 +1,68 @@
+﻿@using AirMap.Controllers
+@using Microsoft.Extensions.Options
+@inject IOptions<SocialMediaLinks> SocialMediaLinks
+
+@* <p>Use this page to detail your site's terms of service.</p> *@
+
+@{
+    ViewData["Title"] = "Regulamin";
+}
+
+<head>
+    <!--Style import-->
+    <link rel="stylesheet" href="~/css/TOSprivacy.css" asp-append-version="true" />
+</head>
+
+<body>
+
+    <div class="TOStextFieldBackground">
+        <h1 id="regulamin-title">Regulamin korzystania z aplikacji AirMap</h1>
+
+        <p class="small">Niniejszy Regulamin określa zasady korzystania z aplikacji internetowej <strong>AirMap</strong> (dalej: „Aplikacja”).</p>
+
+        <h3>1. Postanowienia ogólne</h3>
+        <ol>
+            <li>Administratorem Aplikacji jest <strong>Administrator aplikacji AirMap</strong>.</li>
+            <li>Kontakt z administratorem jest możliwy poprzez link do profilu LinkedIn dostępny w Aplikacji (sekcja Kontakt).</li>
+            <li>Korzystanie z Aplikacji oznacza akceptację niniejszego Regulaminu.</li>
+        </ol>
+
+        <h3>2. Zakres usług</h3>
+        <ol>
+            <li>Aplikacja umożliwia wyświetlanie mapy z lokalizacjami sensorów jakości powietrza oraz ich odczytami.</li>
+            <li>Aplikacja pozwala na wyznaczanie trasy między punktem startowym a docelowym z uwzględnieniem filtrów skonfigurowanych przez użytkownika.</li>
+            <li>Aplikacja jest udostępniana bezpłatnie i nie wymaga rejestracji ani logowania.</li>
+        </ol>
+
+        <h3>3. Źródła danych</h3>
+        <ol>
+            <li>Dane o jakości powietrza prezentowane w Aplikacji pochodzą z zewnętrznych serwisów dostarczających dane poprzez publiczne API.</li>
+            <li>Administrator nie jest autorem ani właścicielem tych danych i nie gwarantuje ich poprawności ani aktualności.</li>
+        </ol>
+
+        <h3>4. Warunki korzystania</h3>
+        <ol>
+            <li>Użytkownik zobowiązuje się korzystać z Aplikacji zgodnie z obowiązującym prawem oraz dobrymi obyczajami.</li>
+            <li>Zabronione jest jakiekolwiek działanie mające na celu zakłócenie funkcjonowania Aplikacji, podejmowanie prób modyfikacji kodu źródłowego lub nieuprawnione wykorzystanie zasobów serwera.</li>
+        </ol>
+
+        <h3>5. Ograniczenie odpowiedzialności</h3>
+        <ol>
+            <li>W miarę dozwolonej przez prawo, Administrator nie ponosi odpowiedzialności za szkody wynikłe z decyzji podjętych na podstawie danych prezentowanych w Aplikacji.</li>
+            <li>Administrator nie odpowiada za błędy, opóźnienia ani brak dostępności danych pochodzących od dostawców zewnętrznych.</li>
+        </ol>
+
+        <h3>6. Reklamacje</h3>
+        <p>Aplikacja nie oferuje usług płatnych; w związku z tym standardowa procedura reklamacyjna dotycząca płatnych świadczeń nie ma zastosowania. W przypadku problemów technicznych użytkownik może skontaktować się z administratorem przez 
+            <span class="kontakt"><a href="@SocialMediaLinks.Value.Developer" target="_blank" rel="noopener noreferrer">link do LinkedIn</a></span>.</p>
+
+        <h3>7. Postanowienia końcowe</h3>
+        <ol>
+            <li>Regulamin podlega prawu polskiemu.</li>
+            <li>Wszelkie spory będą rozstrzygane przez właściwe sądy powszechne w Polsce.</li>
+            <li>Administrator zastrzega sobie prawo do zmiany Regulaminu; zmiany wchodzą w życie z chwilą ich opublikowania w Aplikacji.</li>
+        </ol>
+    </div>
+
+
+</body>
