@@ -45,25 +45,62 @@ function calculateAirScore(routePoints, goodMarkers, radiusMeters = 500) {
     return score;
 }
 
+function isNearAny(point, routePoints, maxDistanceMeters = 100) {
+    if (!routePoints || routePoints.length === 0) return false;
+    for (const r of routePoints) {
+        if (point.distanceTo(r) <= maxDistanceMeters) return true;
+    }
+    return false;
+}
+
+function pushIfNotClose(arr, point, minDistMeters = 1) {
+    for (const p of arr) {
+        if (p.distanceTo(point) <= minDistMeters) return;
+    }
+    arr.push(point);
+}
+
 let routeLine = null;
+let loopedRouteLine = null;
 let destinationMarker = null;
 
 export function restoreRouteLine(map) {
     const cachedRoute = SessionCache.get("routeLine");
     if (cachedRoute && cachedRoute.length > 1) {
-        routeLine = L.polyline(cachedRoute, { color: "green", weight: 5 }).addTo(
-            map
-        );
+        routeLine = L.polyline(cachedRoute, { color: "green", weight: 5 }).addTo(map);
+        window.routeLine = routeLine;
+    }
+    const cachedLooped = SessionCache.get("loopedRouteLine");
+    if (cachedLooped && cachedLooped.length > 1) {
+        const filters = SessionCache.get("routeFilters") || {};
+        const primaryColor = (filters.selectedRoute === "cleanest")
+            ? "#00b894"
+            : (filters.selectedRoute === "shortest" ? "#0984e3" : "#636e72");
+        loopedRouteLine = L.polyline(cachedLooped, { color: primaryColor, weight: 5, opacity: 0.5 }).addTo(map);
+        window.loopedRouteLine = loopedRouteLine;
     }
 }
 
-
 export function removeRouteLine(map) {
     if (window.routeLine) {
-        map.removeLayer(window.routeLine);
+        try {
+            map.removeLayer(window.routeLine);
+        } catch (e) {
+        }
         window.routeLine = null;
+        routeLine = null;
     }
     if (SessionCache.exists("routeLine")) SessionCache.remove("routeLine");
+
+    if (window.loopedRouteLine) {
+        try {
+            map.removeLayer(window.loopedRouteLine);
+        } catch (e) {
+        }
+        window.loopedRouteLine = null;
+        loopedRouteLine = null;
+    }
+    if (SessionCache.exists("loopedRouteLine")) SessionCache.remove("loopedRouteLine");
 }
 
 export function restoreDestinationMarker(map) {
@@ -91,23 +128,6 @@ const routeColors = {
     default: "#636e72",
 };
 
-function generateGridPoints(start, end, spacingDegrees = 0.001) {
-    const points = [];
-
-    const minLat = Math.min(start.lat, end.lat);
-    const maxLat = Math.max(start.lat, end.lat);
-    const minLng = Math.min(start.lng, end.lng);
-    const maxLng = Math.max(start.lng, end.lng);
-
-    for (let lat = minLat; lat <= maxLat; lat += spacingDegrees) {
-        for (let lng = minLng; lng <= maxLng; lng += spacingDegrees) {
-            points.push(L.latLng(lat, lng));
-        }
-    }
-
-    return points;
-}
-
 export function setupRouting(map, getStartLatLng, goodMarkers, allMarkersLatLng) {
     if (map._hasRoutingHandler) return;
     map._hasRoutingHandler = true;
@@ -134,91 +154,122 @@ export function setupRouting(map, getStartLatLng, goodMarkers, allMarkersLatLng)
             let graphPoints;
             if (filters.selectedRoute === "shortest") {
                 graphPoints = [userLatLng, ...allMarkersLatLng, destLatLng];
-            }
-            else {
+            } else {
                 graphPoints = [userLatLng, ...goodMarkers, destLatLng];
             }
 
-            const aStarPath = aStar(userLatLng, destLatLng, graphPoints, filters.rangeLimiter , goodMarkers, filters.selectedRoute === "cleanest", allMarkersLatLng.filter(p => !goodMarkers.includes(p)));
+            const aStarPath = aStar(
+                userLatLng,
+                destLatLng,
+                graphPoints,
+                filters.rangeLimiter,
+                goodMarkers,
+                filters.selectedRoute === "cleanest",
+                allMarkersLatLng.filter(p => !goodMarkers.includes(p))
+            );
 
             if (!aStarPath || aStarPath.length < 2) {
                 alert("Nie znaleziono żadnej sensownej ścieżki.");
                 return;
             }
 
-            const route = await fetchRouteBetweenWaypoints(aStarPath);
+            const primaryRoute = await fetchRouteBetweenWaypoints(aStarPath);
 
-            if (!route || route.length < 2) {
+            if (!primaryRoute || primaryRoute.length < 2) {
                 alert("Nie udało się pobrać trasy drogowej.");
                 return;
             }
 
-            const totalLengthMeters = aStarPath.reduce((acc, curr, i, arr) => {
-                if (i === 0) return 0;
-                return acc + getDistance(arr[i - 1], curr);
-            }, 0);
+            SessionCache.set("primaryRoute", { path: aStarPath, route: primaryRoute });
+            const primaryColor = routeColors[filters.selectedRoute] || routeColors.default;
+            window.routeLine = L.polyline(primaryRoute, { color: primaryColor, weight: 5 }).addTo(map);
+            SessionCache.set("routeLine", window.routeLine.getLatLngs());
 
-            const totalLengthKm = totalLengthMeters / 1000;
-
-            if (filters.lengthLimiter && totalLengthKm > filters.lengthLimiter) {
-                alert(
-                    `Trasa przekracza dozwolony limit długości: ${totalLengthKm.toFixed(2)} km > ${filters.lengthLimiter} km`
-                );
-                removeRouteLine(map);
-                removeDestinationMarker(map);
+            if (!filters.loopedRoute) {
+                const airScore = calculateAirScore(primaryRoute, goodMarkers);
+                const qualityPercent = Math.round((airScore / primaryRoute.length) * 100);
+                console.log(`Trasa: ${primaryRoute.length} pkt, ${airScore} blisko czystego (${qualityPercent}%)`);
                 return;
             }
 
-            const airScore = calculateAirScore(route, goodMarkers);
-            const qualityPercent = Math.round((airScore / route.length) * 100);
+            const attemptDistances = [200, 150, 120, 100, 80, 60, 40];
+            let foundAltPath = null;
+            let foundAltRoute = null;
 
-            const color = routeColors[filters.selectedRoute] || routeColors.default;
+            const primaryPathNodes = aStarPath.slice();
 
-            removeRouteLine(map);
+            for (const distMeters of attemptDistances) {
+                const filteredNodes = graphPoints.filter(p => {
+                    if (p.distanceTo(userLatLng) < 0.5) return true;
+                    if (p.distanceTo(destLatLng) < 0.5) return true;
+                    return !isNearAny(p, primaryRoute, distMeters);
+                });
 
-            window.routeLine = L.polyline(route, { color, weight: 5 }).addTo(map);
-            SessionCache.set("routeLine", window.routeLine.getLatLngs());
+                const altGraph = [];
+                pushIfNotClose(altGraph, destLatLng);
+                for (const p of filteredNodes) pushIfNotClose(altGraph, p);
+                pushIfNotClose(altGraph, userLatLng);
 
-            const typTrasy =
-                filters.selectedRoute === "cleanest"
-                    ? "Najczystsza ścieżka"
-                    : "Najkrótsza ścieżka";
-            const loopedRoute = filters.loopedRoute ? ", zapętlona" : "";
-            const lengthLimiter = filters.lengthLimiter
-                ? `, długość ograniczona do ${filters.lengthLimiter} km`
-                : "";
-            const activeSensors = filters.activeSensors
-                ? `, sensory PM: [${filters.activeSensors.join(", ")}]`
-                : "";
+                try {
+                    const alt = aStar(
+                        destLatLng,
+                        userLatLng,
+                        altGraph,
+                        filters.rangeLimiter,
+                        goodMarkers,
+                        filters.selectedRoute === "cleanest",
+                        primaryPathNodes
+                    );
 
-            console.log(
-                `Trasa (${typTrasy}${loopedRoute}${lengthLimiter}${activeSensors}): ${route.length} punktów, z czego ${airScore
-                } blisko czystego powietrza (${qualityPercent}%)`
-            );
+                    if (alt && alt.length >= 2) {
+                        const altR = await fetchRouteBetweenWaypoints(alt);
+                        if (altR && altR.length >= 2) {
+                            foundAltPath = alt;
+                            foundAltRoute = altR;
+                            console.log(
+                                `Znaleziono trasę powrotną na progu ${distMeters}m, długość punków: ${alt.length}`);
+                            break;
+                        } else {
+                            console.log("alt znaleziono, ale nie pobrano geometria (OSRM).");
+                        }
+                    } else {
+                        console.log("Brak alt path na tym progu.");
+                    }
+                } catch (err) {
+                    console.warn("Błąd podczas aStar (alt):", err);
+                }
+            }
+
+            if (!foundAltRoute) {
+                console.warn(
+                    "Nie znaleziono wystarczająco innej trasy powrotnej - stosuję fallback (odwrócona trasa podstawowa).");
+                const reversedPath = aStarPath.slice().reverse();
+                const reversedRoute = await fetchRouteBetweenWaypoints(reversedPath);
+                if (reversedRoute && reversedRoute.length >= 2) {
+                    foundAltPath = reversedPath;
+                    foundAltRoute = reversedRoute;
+                } else {
+                    console.error("Fallback też nie zwrócił geometrii. Brak zapętlonej trasy.");
+                    foundAltPath = null;
+                    foundAltRoute = null;
+                }
+            }
+
+            if (foundAltRoute && foundAltRoute.length >= 2) {
+                window.loopedRouteLine =
+                    L.polyline(foundAltRoute, { color: primaryColor, weight: 5, opacity: 0.5 }).addTo(map);
+                SessionCache.set("loopedRouteLine", window.loopedRouteLine.getLatLngs());
+                SessionCache.set("returnRoute", { path: foundAltPath, route: foundAltRoute });
+                console.log("Trasa powrotna (zapętlona) narysowana.");
+            } else {
+                console.warn("Nie narysowano zapętlonej trasy - pozostała tylko trasa podstawowa.");
+            }
+
         });
 }
 
 window.onRouteFiltersChanged = function() {
     const filters = SessionCache.get("routeFilters") || {};
     SessionCache.set("routeFilters", filters);
-    // Możesz dodać tu log, jeśli chcesz widzieć zmiany filtrów:
     console.log("Zapisano nowe filtry trasy:", filters);
 };
-
-function getDistance(point1, point2) {
-    const R = 6371e3;
-    const toRad = (deg) => deg * Math.PI / 180;
-
-    const lat1 = toRad(point1.lat);
-    const lat2 = toRad(point2.lat);
-    const deltaLat = toRad(point2.lat - point1.lat);
-    const deltaLng = toRad(point2.lng - point1.lng);
-
-    const a =
-        Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-            Math.cos(lat1) * Math.cos(lat2) *
-            Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-}
