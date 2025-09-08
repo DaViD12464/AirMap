@@ -27,7 +27,7 @@ function airQualityPenalty(latlng, badMarkers, radiusMeters = 300) {
 }
 
 
-export function aStar(start, goal, nodes, maxDistanceKm = 100, goodMarkers = [], prioritizeClean = false, badMarkers = []) {
+export function aStar(start, goal, nodes, maxDistanceKm = 100, goodMarkers = [], prioritizeClean = true, badMarkers = []) {
     if (!start || !goal || !Array.isArray(nodes) || nodes.length === 0)
         return null;
 
