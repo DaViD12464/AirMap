@@ -6,7 +6,7 @@ function latLngKey(latlng) {
     return `${latlng.lat},${latlng.lng}`;
 }
 
-function airQualityBonus(latlng, goodMarkers, radiusMeters = 300) {
+function airQualityBonus(latlng, goodMarkers, radiusMeters = 500) {
     for (const marker of goodMarkers) {
         const dist = latlng.distanceTo(marker);
         if (dist <= radiusMeters) {
@@ -16,7 +16,7 @@ function airQualityBonus(latlng, goodMarkers, radiusMeters = 300) {
     return 0;
 }
 
-function airQualityPenalty(latlng, badMarkers, radiusMeters = 300) {
+function airQualityPenalty(latlng, badMarkers, radiusMeters = 500) {
     for (const marker of badMarkers) {
         const dist = latlng.distanceTo(marker);
         if (dist <= radiusMeters) {
