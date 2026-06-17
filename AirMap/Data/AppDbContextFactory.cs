@@ -21,7 +21,15 @@ namespace AirMap.Data
                 throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            optionsBuilder.UseSqlServer(connectionString);
+
+            //REDUNDANT - migration from SQL Server / PostgreSQL to MySQL / MariaDB
+            // optionsBuilder.UseSqlServer(connectionString);
+
+            optionsBuilder.UseMySql(
+                connectionString,
+                new MariaDbServerVersion(new Version(10, 5, 29))
+            );
+
             return new AppDbContext(optionsBuilder.Options);
         }
     }
