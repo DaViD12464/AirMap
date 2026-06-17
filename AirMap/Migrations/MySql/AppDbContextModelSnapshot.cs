@@ -4,26 +4,23 @@ using AirMap.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace AirMap.Migrations
+namespace AirMap.Migrations.MySql
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250622000702_init")]
-    partial class Init
+    partial class AppDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "9.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
             modelBuilder.Entity("AirMap.Models.Location", b =>
                 {
@@ -31,25 +28,25 @@ namespace AirMap.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<double?>("Altitude")
-                        .HasColumnType("float");
+                        .HasColumnType("double");
 
                     b.Property<string>("Country")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<bool?>("ExactLocation")
-                        .HasColumnType("bit");
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<bool?>("Indoor")
-                        .HasColumnType("bit");
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<double?>("Latitude")
-                        .HasColumnType("float");
+                        .HasColumnType("double");
 
                     b.Property<double?>("Longitude")
-                        .HasColumnType("float");
+                        .HasColumnType("double");
 
                     b.Property<long?>("SourceApiId")
                         .HasColumnType("bigint");
@@ -65,7 +62,7 @@ namespace AirMap.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int?>("Pin")
                         .HasColumnType("int");
@@ -89,7 +86,7 @@ namespace AirMap.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<long?>("SensorModelId")
                         .HasColumnType("bigint");
@@ -98,11 +95,11 @@ namespace AirMap.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<double?>("Value")
-                        .HasColumnType("float");
+                        .HasColumnType("double");
 
                     b.Property<string>("ValueType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -117,7 +114,7 @@ namespace AirMap.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<decimal?>("AverageHcho")
                         .HasColumnType("decimal(18, 2)");
@@ -164,7 +161,7 @@ namespace AirMap.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("varchar");
 
-                    b.Property<bool?>("Indoor")
+                    b.Property<ulong?>("Indoor")
                         .HasColumnType("bit");
 
                     b.Property<decimal?>("Latitude")
@@ -202,7 +199,7 @@ namespace AirMap.Migrations
 
                     b.PrimitiveCollection<string>("SensorDataValuesIds")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<long?>("SensorId")
                         .HasColumnType("bigint");
@@ -219,8 +216,7 @@ namespace AirMap.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Device")
-                        .IsUnique()
-                        .HasFilter("[Device] IS NOT NULL");
+                        .IsUnique();
 
                     b.HasIndex("Id")
                         .IsUnique();
@@ -230,8 +226,7 @@ namespace AirMap.Migrations
                     b.HasIndex("SensorId");
 
                     b.HasIndex("SourceApiId")
-                        .IsUnique()
-                        .HasFilter("[SourceApiId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("SensorModel", (string)null);
                 });
@@ -242,13 +237,13 @@ namespace AirMap.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Manufacturer")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<long?>("SourceApiId")
                         .HasColumnType("bigint");
