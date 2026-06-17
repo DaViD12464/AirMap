@@ -107,6 +107,29 @@ footer {
     max-width: 3000px !important;
 }
 
+@media (max-width: 1920px) {
+    .logo img {
+        max-height: 100px;
+        width: 100px;
+    }
+
+    #footerText {
+        font-size: 12px;
+    }
+
+    html {
+        font-size: 16px;
+    }
+
+    .menu-button {
+        font-size: 1em;
+    }
+
+    .menu-button:hover {
+        font-size: 1.05em;
+    }
+}
+
 @media (max-width: 1200px) {
     .logo img {
         max-height: 100px;
