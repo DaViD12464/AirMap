@@ -22,28 +22,50 @@ try
     builder.Services.AddHostedService<AirQualityHostedService>(); // Rejestracja HostedService jako singleton
     builder.Services.AddHostedService<SensorProcessor>(); // Rejestracja innego HostedService
 
+    /* REDUNDANT - migration from SQL Server / PostgreSQL to MySQL / MariaDB
+    // Konfiguracja DbContext z u¿yciem SQL Server
+        builder.Services.AddDbContext<AppDbContext>(options =>
+        {
+            options.UseSqlServer(
+                builder.Configuration.GetConnectionString("DefaultConnection"),
+                sqlServerOptions =>
+                {
+                    sqlServerOptions.EnableRetryOnFailure(
+                        maxRetryCount: 10,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null
+                    );
+                }
+            );
+            options.LogTo(Console.WriteLine, LogLevel.Warning); // Log warnings to the console
+        });
+    */
 
-// Konfiguracja DbContext z u¿yciem SQL Server
+    // Konfiguracja DbContext z u¿yciem MariaDB / MySQL
     builder.Services.AddDbContext<AppDbContext>(options =>
     {
-        options.UseSqlServer(
-            builder.Configuration.GetConnectionString("DefaultConnection"),
-            sqlServerOptions =>
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+        options.UseMySql(
+            connectionString,
+            new MariaDbServerVersion(new Version(10, 5, 29)),
+            mySqlOptions =>
             {
-                sqlServerOptions.EnableRetryOnFailure(
+                mySqlOptions.EnableRetryOnFailure(
                     maxRetryCount: 10,
                     maxRetryDelay: TimeSpan.FromSeconds(30),
                     errorNumbersToAdd: null
                 );
             }
         );
-        options.LogTo(Console.WriteLine, LogLevel.Warning); // Log warnings to the console
+
+        options.LogTo(Console.WriteLine, LogLevel.Warning);
     });
 
 
 
 
-// Test po³¹czenia z baz¹ danych
+    // Test po³¹czenia z baz¹ danych
     var conStr = builder.Configuration.GetConnectionString("DefaultConnection");
     if (string.IsNullOrEmpty(conStr))
     {
